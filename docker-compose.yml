@@ -1,0 +1,109 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: rag-backend
+    ports:
+      - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+    environment:
+      # - OLLAMA_BASE_URL=http://172.17.0.1:11434
+      - RUNTIME_ENV=local
+      - HOST_SYSTEM=container
+      - VECTOR_INDEX=contracts_oai
+    # volumes:
+    #   - ./vectordb:/app/vectordb
+    networks:
+      - rag-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rag-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    networks:
+      - rag-net
+
+  postgres:
+    image: postgres:15
+    container_name: rag-postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=cuad
+      - POSTGRES_USER=cuad_user
+      - POSTGRES_PASSWORD=cuad_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rag-net
+
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: rag-dynamodb
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./.db/dynamodb:/home/dynamodblocal/data
+    networks:
+      - rag-net
+
+  opensearch:
+    image: opensearchproject/opensearch:2.11.1
+    container_name: rag-opensearch
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_PLUGIN=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    networks:
+      - rag-net
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.11.1
+    container_name: rag-opensearch-dashboards
+    ports:
+      - "5601:5601"
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
+    depends_on:
+      - opensearch
+    networks:
+      - rag-net
+
+networks:
+  rag-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  dynamodb_data:
+  opensearch_data:
