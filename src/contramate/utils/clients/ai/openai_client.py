@@ -168,6 +168,87 @@ class OpenAIChatClient(BaseChatClient):
             logger.error(f"Error fetching available models: {e}")
             return []
 
+    def chat(
+        self,
+        messages: List[Union[ChatMessage, Dict[str, str]]],
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        config: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> str:
+        """
+        Simplified chat method for backward compatibility with agents
+
+        Args:
+            messages: List of chat messages
+            model: Model to use (optional)
+            temperature: Sampling temperature (optional)
+            max_tokens: Maximum tokens to generate (optional)
+            config: Additional configuration (e.g., response_format)
+            **kwargs: Additional parameters for OpenAI API
+
+        Returns:
+            str: Response content
+        """
+        # Merge config into kwargs if provided
+        if config:
+            kwargs.update(config)
+
+        response = self.chat_completion(
+            messages=messages,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **kwargs
+        )
+        return response.content
+
+    def select_tool(
+        self,
+        messages: List[Union[ChatMessage, Dict[str, str]]],
+        tools: List[Dict[str, Any]],
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        **kwargs
+    ) -> List[Any]:
+        """
+        Tool selection method for function calling
+
+        Args:
+            messages: List of chat messages
+            tools: List of tool descriptions
+            model: Model to use (optional)
+            temperature: Sampling temperature (optional)
+            max_tokens: Maximum tokens to generate (optional)
+            **kwargs: Additional parameters for OpenAI API
+
+        Returns:
+            List[Any]: Tool calls from the response
+        """
+        try:
+            normalized_messages = self._normalize_messages(messages)
+
+            response = self._sync_client.chat.completions.create(
+                model=self._get_model(model),
+                messages=normalized_messages,
+                temperature=self._get_temperature(temperature),
+                max_completion_tokens=self._get_max_tokens(max_tokens),
+                tools=tools,
+                tool_choice="auto",
+                **kwargs
+            )
+
+            return response.choices[0].message.tool_calls or []
+
+        except OpenAIError as e:
+            logger.error(f"OpenAI API error in tool selection: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in OpenAI tool selection: {e}")
+            raise
+
 
 if __name__ == "__main__":
     import asyncio

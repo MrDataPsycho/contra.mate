@@ -169,6 +169,91 @@ class LiteLLMChatClient(BaseChatClient):
             "gpt-3.5-turbo",
         ]
 
+    def chat(
+        self,
+        messages: List[Union[ChatMessage, Dict[str, str]]],
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        config: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> str:
+        """
+        Simplified chat method for backward compatibility with agents
+
+        Args:
+            messages: List of chat messages
+            model: Model to use (optional)
+            temperature: Sampling temperature (optional)
+            max_tokens: Maximum tokens to generate (optional)
+            config: Additional configuration (e.g., response_format)
+            **kwargs: Additional parameters for LiteLLM API
+
+        Returns:
+            str: Response content
+        """
+        # Merge config into kwargs if provided
+        if config:
+            kwargs.update(config)
+
+        response = self.chat_completion(
+            messages=messages,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **kwargs
+        )
+        return response.content
+
+    def select_tool(
+        self,
+        messages: List[Union[ChatMessage, Dict[str, str]]],
+        tools: List[Dict[str, Any]],
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        **kwargs
+    ) -> List[Any]:
+        """
+        Tool selection method for function calling
+
+        Args:
+            messages: List of chat messages
+            tools: List of tool descriptions
+            model: Model to use (optional)
+            temperature: Sampling temperature (optional)
+            max_tokens: Maximum tokens to generate (optional)
+            **kwargs: Additional parameters for LiteLLM API
+
+        Returns:
+            List[Any]: Tool calls from the response
+        """
+        try:
+            normalized_messages = self._normalize_messages(messages)
+
+            # Prepare LiteLLM parameters
+            completion_params = {
+                "model": self._get_model(model),
+                "messages": normalized_messages,
+                "temperature": self._get_temperature(temperature),
+                "max_tokens": self._get_max_tokens(max_tokens),
+                "api_key": self.api_key,
+                "tools": tools,
+                "tool_choice": "auto",
+                **kwargs
+            }
+
+            response = litellm.completion(**completion_params)
+
+            return response.choices[0].message.tool_calls or []
+
+        except (AuthenticationError, RateLimitError, APIConnectionError, APIError) as e:
+            logger.error(f"LiteLLM API error in tool selection: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in LiteLLM tool selection: {e}")
+            raise
+
 
 
 if __name__ == "__main__":
