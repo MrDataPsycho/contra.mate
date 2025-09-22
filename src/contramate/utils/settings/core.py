@@ -53,12 +53,36 @@ class OpenAISettings(ABCBaseSettings):
     """OpenAI API settings"""
     api_key: str | None = Field(default=None, description="OpenAI API key")
     model: str = Field(default="gpt-5-mini", description="Default OpenAI model")
+    embedding_model: str = Field(default="text-embedding-3-large", description="Default OpenAI embedding model")
     temperature: float = Field(default=0.7, description="Default temperature for completions")
     max_tokens: int = Field(default=1000, description="Default max tokens for completions")
     base_url: str | None = Field(default=None, description="Custom OpenAI API base URL")
 
     model_config = ABCBaseSettings.model_config.copy()
     model_config["env_prefix"] = "OPENAI_"
+
+
+class AOAICertSettings(ABCBaseSettings):
+    """Azure OpenAI Certificate-based authentication settings"""
+    tenant_id: str = Field(description="Azure tenant ID")
+    client_id: str = Field(description="Azure client ID")
+    resource: str = Field(default="https://cognitiveservices.azure.com", description="Azure cognitive services resource")
+    public_cert_key: str = Field(description="Public certificate key content")
+    private_cert_key: str = Field(description="Private certificate key content")
+    azure_endpoint: str = Field(description="Azure OpenAI endpoint URL")
+    api_version: str = Field(default="2023-05-15", description="Azure OpenAI API version")
+    model: str = Field(default="gpt-4", description="Default Azure OpenAI model")
+    embedding_model: str = Field(default="text-embedding-ada-002", description="Default Azure OpenAI embedding model")
+    temperature: float = Field(default=0.7, description="Default temperature for completions")
+    max_tokens: int = Field(default=1000, description="Default max tokens for completions")
+
+    model_config = ABCBaseSettings.model_config.copy()
+    model_config["env_prefix"] = "AZURE_OPENAI_"
+
+    @property
+    def certificate_string(self) -> str:
+        """Get certificate string combining public and private keys"""
+        return self.private_cert_key.encode() + b"\n" + self.public_cert_key.encode()
 
 
 class AppSettings(ABCBaseSettings):
@@ -73,6 +97,8 @@ class AppSettings(ABCBaseSettings):
     model_config["env_prefix"] = "APP_"
 
 
+
+
 class Settings:
     """Central settings class that aggregates all configuration groups"""
 
@@ -81,6 +107,7 @@ class Settings:
         self.dynamodb = DynamoDBSettings()
         self.opensearch = OpenSearchSettings()
         self.openai = OpenAISettings()
+        self.azure_openai = AOAICertSettings()
         self.app = AppSettings()
 
     def reload(self):
@@ -89,6 +116,7 @@ class Settings:
         self.dynamodb = DynamoDBSettings()
         self.opensearch = OpenSearchSettings()
         self.openai = OpenAISettings()
+        self.azure_openai = AOAICertSettings()
         self.app = AppSettings()
 
 
