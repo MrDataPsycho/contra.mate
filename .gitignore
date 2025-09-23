@@ -125,3 +125,4 @@ faiss_index/
 *token*
 credentials.json
 service-account.json
+data
