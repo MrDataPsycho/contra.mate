@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
+    env_file:
+      - .envs/local.env
     environment:
       # - OLLAMA_BASE_URL=http://172.17.0.1:11434
       - RUNTIME_ENV=local

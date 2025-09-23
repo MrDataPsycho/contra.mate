@@ -1,5 +1,6 @@
 import logging
-from contramate.utils.clients.ai.openai_client import OpenAIChatClient
+from typing import Union
+from contramate.utils.clients.ai import OpenAIChatClient, LiteLLMChatClient
 import json
 
 
@@ -30,18 +31,18 @@ SYSTEM_PROMPT = """
 """
 
 class AnswerCritiqueAgent:
-    def __init__(self, client: OpenAIChatClient, system_prompt: str | None = None):
+    def __init__(self, client: Union[OpenAIChatClient, LiteLLMChatClient], system_prompt: str | None = None):
         self.client = client
         self.system_prompt = system_prompt if system_prompt else SYSTEM_PROMPT
 
 
-    def execute(self, question: str, answers: list[dict[str, str]]) -> list[str]:
+    def execute(self, question: str, conversation_history: list[dict[str, str]]) -> list[str]:
         messages = [
             {
                 "role": "system",
                 "content": self.system_prompt,
             },
-            *answers,
+            *conversation_history,
             {
                 "role": "user",
                 "content": f"The original user question to answer: {question}",
@@ -56,5 +57,5 @@ class AnswerCritiqueAgent:
             print("Error decoding JSON")
         return []
     
-    def __call__(self, input: str, answers: list[dict[str, str]] = None) -> list[str]:
-        return self.execute(input, answers)
+    def __call__(self, input: str, conversation_history: list[dict[str, str]] = None) -> list[str]:
+        return self.execute(input, conversation_history or [])

@@ -55,11 +55,11 @@ class BaseClient(ABC):
 
     def _get_temperature(self, temperature: Optional[float] = None) -> float:
         """Get temperature, using default if not specified"""
-        return temperature if temperature is not None else 0.7
+        return temperature if temperature is not None else 0.0
 
     def _get_max_tokens(self, max_tokens: Optional[int] = None) -> int:
         """Get max tokens, using default if not specified"""
-        return max_tokens if max_tokens is not None else 1000
+        return max_tokens if max_tokens is not None else 1024
 
 
 class BaseChatClient(BaseClient):

@@ -365,39 +365,39 @@ if __name__ == "__main__":
         async_response = await client.async_chat_completion(test_messages)
         print(f"Async response: {async_response.content}")
 
-        # Test Azure OpenAI with certificate-based authentication
-        try:
-            print("\nTesting Azure OpenAI LiteLLM client (certificate-based authentication)...")
-            azure_client = LiteLLMChatClient(use_azure=True)
+        # # Test Azure OpenAI with certificate-based authentication
+        # try:
+        #     print("\nTesting Azure OpenAI LiteLLM client (certificate-based authentication)...")
+        #     azure_client = LiteLLMChatClient(use_azure=True)
             
-            azure_messages = [
-                {"role": "user", "content": "Hello from Azure OpenAI via LiteLLM!"}
-            ]
+        #     azure_messages = [
+        #         {"role": "user", "content": "Hello from Azure OpenAI via LiteLLM!"}
+        #     ]
             
-            azure_response = azure_client.chat_completion(azure_messages)
-            print(f"Azure response: {azure_response.content}")
+        #     azure_response = azure_client.chat_completion(azure_messages)
+        #     print(f"Azure response: {azure_response.content}")
             
-        except Exception as e:
-            print(f"Azure certificate test skipped (likely not configured): {e}")
+        # except Exception as e:
+        #     print(f"Azure certificate test skipped (likely not configured): {e}")
 
-        # Test Azure OpenAI with direct certificate parameters
-        try:
-            print("\nTesting Azure OpenAI LiteLLM client (with direct certificate params)...")
+        # # Test Azure OpenAI with direct certificate parameters
+        # try:
+        #     print("\nTesting Azure OpenAI LiteLLM client (with direct certificate params)...")
             
-            # Example of how to use direct certificate parameters
-            azure_direct_client = LiteLLMChatClient(
-                use_azure=True,
-                token_provider=get_cert_token_provider(settings.azure_openai),
-                azure_endpoint=settings.azure_openai.azure_endpoint,
-                api_version=settings.azure_openai.api_version,
-                model=settings.azure_openai.model
-            )
+        #     # Example of how to use direct certificate parameters
+        #     azure_direct_client = LiteLLMChatClient(
+        #         use_azure=True,
+        #         token_provider=get_cert_token_provider(settings.azure_openai),
+        #         azure_endpoint=settings.azure_openai.azure_endpoint,
+        #         api_version=settings.azure_openai.api_version,
+        #         model=settings.azure_openai.model
+        #     )
             
-            print("Azure direct certificate client initialized successfully")
-            azure_response = azure_direct_client.chat_completion(azure_messages)
-            print(f"Azure direct response: {azure_response.content}")
+        #     print("Azure direct certificate client initialized successfully")
+        #     azure_response = azure_direct_client.chat_completion(azure_messages)
+        #     print(f"Azure direct response: {azure_response.content}")
             
-        except Exception as e:
-            print(f"Azure direct certificate params test: {e}")
+        # except Exception as e:
+        #     print(f"Azure direct certificate params test: {e}")
 
     asyncio.run(test_client())
