@@ -6,7 +6,7 @@ from litellm import AuthenticationError, RateLimitError, APIConnectionError, API
 
 from contramate.utils.settings.core import settings
 from contramate.utils.auth.certificate_provider import get_cert_token_provider
-from .base import BaseEmbeddingClient, EmbeddingResponse
+from contramate.utils.clients.ai.base import BaseEmbeddingClient, EmbeddingResponse
 
 logger = logging.getLogger(__name__)
 
@@ -88,14 +88,14 @@ class LiteLLMEmbeddingClient(BaseEmbeddingClient):
             token = self._get_azure_token()
             
             azure_params = {
-                "api_key": token,
+                **kwargs,  # Include kwargs first
+                "api_key": token,  # Override with our token (never allow override)
                 "api_base": self.azure_endpoint,
                 "api_version": self.api_version,
-                "api_type": "azure",  # Explicitly set for LiteLLM
-                **kwargs
+                # Note: api_type is not needed for newer LiteLLM versions
             }
             return azure_params
-        return {"api_key": self.api_key, **kwargs}
+        return {**kwargs, "api_key": self.api_key}  # Override with our API key
 
     def _get_embedding_model(self, model: Optional[str] = None) -> str:
         """Get embedding model name, using default if not specified"""
@@ -110,23 +110,64 @@ class LiteLLMEmbeddingClient(BaseEmbeddingClient):
 
     def _create_embedding_response(self, response: Any) -> EmbeddingResponse:
         """Convert LiteLLM embedding response to standardized format"""
-        usage = response.usage
-        embeddings = [data.embedding for data in response.data]
-        
-        return EmbeddingResponse(
-            embeddings=embeddings,
-            model=response.model,
-            usage={
-                "prompt_tokens": usage.prompt_tokens if usage else 0,
-                "total_tokens": usage.total_tokens if usage else 0,
-            },
-            dimensions=len(embeddings[0]) if embeddings else 0,
-            metadata={
-                "object": getattr(response, 'object', None),
-                "provider": self._get_provider_from_model(response.model),
-                "use_azure": self.use_azure
-            }
-        )
+        try:
+            # Debug: Log response structure
+            logger.debug(f"Response type: {type(response)}")
+            logger.debug(f"Response data type: {type(response.data) if hasattr(response, 'data') else 'No data attr'}")
+            if hasattr(response, 'data') and response.data:
+                logger.debug(f"First data item type: {type(response.data[0])}")
+                logger.debug(f"First data item: {response.data[0] if len(str(response.data[0])) < 200 else 'Too long to log'}")
+            
+            usage = response.usage if hasattr(response, 'usage') else None
+            
+            # Handle different response formats
+            if hasattr(response, 'data') and response.data:
+                embeddings = []
+                for data_item in response.data:
+                    if hasattr(data_item, 'embedding'):
+                        # Standard format: data_item.embedding
+                        embeddings.append(data_item.embedding)
+                    elif isinstance(data_item, dict) and 'embedding' in data_item:
+                        # Dict format: data_item['embedding']
+                        embeddings.append(data_item['embedding'])
+                    elif isinstance(data_item, (list, tuple)):
+                        # Direct embedding format
+                        embeddings.append(list(data_item))
+                    else:
+                        logger.warning(f"Unexpected data item format: {type(data_item)}")
+                        # Try to extract embedding from the item
+                        if hasattr(data_item, '__dict__'):
+                            item_dict = data_item.__dict__
+                            if 'embedding' in item_dict:
+                                embeddings.append(item_dict['embedding'])
+                            else:
+                                logger.error(f"No embedding found in data item: {item_dict.keys()}")
+                                raise ValueError(f"Cannot extract embedding from data item: {type(data_item)}")
+                        else:
+                            raise ValueError(f"Cannot extract embedding from data item: {type(data_item)}")
+            else:
+                raise ValueError("No data found in response")
+            
+            return EmbeddingResponse(
+                embeddings=embeddings,
+                model=response.model if hasattr(response, 'model') else 'unknown',
+                usage={
+                    "prompt_tokens": usage.prompt_tokens if usage and hasattr(usage, 'prompt_tokens') else 0,
+                    "total_tokens": usage.total_tokens if usage and hasattr(usage, 'total_tokens') else 0,
+                },
+                dimensions=len(embeddings[0]) if embeddings and len(embeddings[0]) > 0 else 0,
+                metadata={
+                    "object": getattr(response, 'object', None),
+                    "provider": self._get_provider_from_model(response.model if hasattr(response, 'model') else 'unknown'),
+                    "use_azure": self.use_azure
+                }
+            )
+        except Exception as e:
+            logger.error(f"Error creating embedding response: {e}")
+            logger.error(f"Response type: {type(response)}")
+            if hasattr(response, '__dict__'):
+                logger.error(f"Response attributes: {list(response.__dict__.keys())}")
+            raise
 
     def _get_provider_from_model(self, model: str) -> str:
         """Determine provider from model name"""
@@ -224,58 +265,125 @@ class LiteLLMEmbeddingClient(BaseEmbeddingClient):
 
 if __name__ == "__main__":
     import asyncio
+    import time
 
-    async def test_embedding_client():
-        # Test OpenAI
-        print("Testing OpenAI LiteLLM embedding client...")
+    async def test_azure_certificate_embedding():
+        """Comprehensive test for Azure OpenAI embedding with certificate-based authentication"""
+        
+        print("="*80)
+        print("TESTING LiteLLM Embedding Client with Azure Certificate Authentication")
+        print("="*80)
+        
+        # Test data
+        test_texts = [
+            "This is a comprehensive test for Azure OpenAI embedding using certificate authentication.",
+            "LiteLLM provides a unified interface for multiple AI providers including Azure OpenAI.",
+            "Certificate-based authentication ensures secure access to Azure resources.",
+            "Embeddings convert text into high-dimensional vectors for semantic analysis."
+        ]
+        
+        single_text = "Single sentence test for Azure OpenAI embedding via LiteLLM."
+        
+        # Test 1: Azure Client with Settings (Certificate-based)
+        print("\n" + "="*60)
+        print("TEST 1: Azure Client Initialization (Settings-based)")
+        print("="*60)
+        
         try:
-            client = LiteLLMEmbeddingClient()
-
-            test_texts = [
-                "This is a test sentence for embedding.",
-                "Another test sentence to embed."
-            ]
-
-            # Test sync
-            print("Testing sync embedding creation...")
-            response = client.create_embeddings(test_texts)
-            print(f"Sync response: {len(response.embeddings)} embeddings, {response.dimensions} dimensions")
-
-            # Test async
-            print("Testing async embedding creation...")
-            async_response = await client.async_create_embeddings(test_texts)
-            print(f"Async response: {len(async_response.embeddings)} embeddings, {async_response.dimensions} dimensions")
-
-            # Test single string
-            print("Testing single string embedding...")
-            single_response = client.create_embeddings("Single test sentence.")
-            print(f"Single response: {len(single_response.embeddings)} embeddings, {single_response.dimensions} dimensions")
-
-        except Exception as e:
-            print(f"OpenAI test failed: {e}")
-
-        # Test Azure OpenAI with certificate-based authentication
-        try:
-            print("\nTesting Azure OpenAI LiteLLM embedding client (certificate-based authentication)...")
+            print("Initializing Azure OpenAI embedding client with certificate authentication...")
             azure_client = LiteLLMEmbeddingClient(use_azure=True)
             
-            azure_texts = [
-                "This is a test sentence for Azure OpenAI embedding.",
-                "Another test sentence to embed with Azure."
-            ]
-            
-            azure_response = azure_client.create_embeddings(azure_texts)
-            print(f"Azure response: {len(azure_response.embeddings)} embeddings, {azure_response.dimensions} dimensions")
+            print(f"✅ Client initialized successfully")
+            print(f"   - Model: {azure_client.default_embedding_model}")
+            print(f"   - Endpoint: {azure_client.azure_endpoint}")
+            print(f"   - API Version: {azure_client.api_version}")
+            print(f"   - Token Provider: {'Available' if azure_client.token_provider else 'Missing'}")
             
         except Exception as e:
-            print(f"Azure certificate test skipped (likely not configured): {e}")
-
-        # Test Azure OpenAI with direct certificate parameters
+            print(f"❌ Client initialization failed: {e}")
+            return
+        
+        # Test 2: Synchronous Embedding Creation
+        print("\n" + "="*60)
+        print("TEST 2: Synchronous Embedding Creation")
+        print("="*60)
+        
         try:
-            print("\nTesting Azure OpenAI LiteLLM embedding client (with direct certificate params)...")
+            print("Creating embeddings synchronously...")
+            start_time = time.time()
             
-            # Example of how to use direct certificate parameters
-            azure_direct_client = LiteLLMEmbeddingClient(
+            response = azure_client.create_embeddings(test_texts)
+            
+            end_time = time.time()
+            duration = end_time - start_time
+            
+            print(f"✅ Sync embeddings created successfully")
+            print(f"   - Number of embeddings: {len(response.embeddings)}")
+            print(f"   - Embedding dimensions: {response.dimensions}")
+            print(f"   - Model used: {response.model}")
+            print(f"   - Duration: {duration:.2f} seconds")
+            print(f"   - Tokens used: {response.usage.get('total_tokens', 'N/A')}")
+            print(f"   - Provider: {response.metadata.get('provider', 'N/A')}")
+            
+            # Verify embedding quality
+            if response.embeddings and len(response.embeddings[0]) > 0:
+                first_embedding = response.embeddings[0]
+                print(f"   - First embedding preview: [{first_embedding[0]:.6f}, {first_embedding[1]:.6f}, ...]")
+            
+        except Exception as e:
+            print(f"❌ Sync embedding creation failed: {e}")
+            return
+        
+        # Test 3: Asynchronous Embedding Creation
+        print("\n" + "="*60)
+        print("TEST 3: Asynchronous Embedding Creation")
+        print("="*60)
+        
+        try:
+            print("Creating embeddings asynchronously...")
+            start_time = time.time()
+            
+            async_response = await azure_client.async_create_embeddings(test_texts)
+            
+            end_time = time.time()
+            duration = end_time - start_time
+            
+            print(f"✅ Async embeddings created successfully")
+            print(f"   - Number of embeddings: {len(async_response.embeddings)}")
+            print(f"   - Embedding dimensions: {async_response.dimensions}")
+            print(f"   - Model used: {async_response.model}")
+            print(f"   - Duration: {duration:.2f} seconds")
+            print(f"   - Tokens used: {async_response.usage.get('total_tokens', 'N/A')}")
+            
+        except Exception as e:
+            print(f"❌ Async embedding creation failed: {e}")
+        
+        # Test 4: Single Text Embedding
+        print("\n" + "="*60)
+        print("TEST 4: Single Text Embedding")
+        print("="*60)
+        
+        try:
+            print("Creating embedding for single text...")
+            single_response = azure_client.create_embeddings(single_text)
+            
+            print(f"✅ Single text embedding created successfully")
+            print(f"   - Number of embeddings: {len(single_response.embeddings)}")
+            print(f"   - Embedding dimensions: {single_response.dimensions}")
+            print(f"   - Model used: {single_response.model}")
+            
+        except Exception as e:
+            print(f"❌ Single text embedding failed: {e}")
+        
+        # Test 5: Direct Certificate Parameters
+        print("\n" + "="*60)
+        print("TEST 5: Direct Certificate Parameters")
+        print("="*60)
+        
+        try:
+            print("Testing with direct certificate parameters...")
+            
+            direct_client = LiteLLMEmbeddingClient(
                 use_azure=True,
                 token_provider=get_cert_token_provider(settings.azure_openai),
                 azure_endpoint=settings.azure_openai.azure_endpoint,
@@ -283,11 +391,75 @@ if __name__ == "__main__":
                 embedding_model=settings.azure_openai.embedding_model
             )
             
-            print("Azure direct certificate embedding client initialized successfully")
-            azure_response = azure_direct_client.create_embeddings(azure_texts)
-            print(f"Azure direct response: {len(azure_response.embeddings)} embeddings, {azure_response.dimensions} dimensions")
+            print(f"✅ Direct parameters client initialized successfully")
+            
+            # Test with direct client
+            direct_response = direct_client.create_embeddings([
+                "Testing direct certificate parameter approach for Azure OpenAI."
+            ])
+            
+            print(f"✅ Direct parameters embedding created successfully")
+            print(f"   - Dimensions: {direct_response.dimensions}")
+            print(f"   - Model: {direct_response.model}")
             
         except Exception as e:
-            print(f"Azure direct certificate params test: {e}")
+            print(f"❌ Direct parameters test failed: {e}")
+        
+        # Test 6: Error Handling
+        print("\n" + "="*60)
+        print("TEST 6: Error Handling")
+        print("="*60)
+        
+        try:
+            print("Testing error handling with invalid input...")
+            
+            # Test empty input
+            try:
+                azure_client.create_embeddings([])
+                print("❌ Empty input should have failed")
+            except Exception as e:
+                print(f"✅ Empty input correctly rejected: {type(e).__name__}")
+            
+            # Test None input
+            try:
+                azure_client.create_embeddings(None)
+                print("❌ None input should have failed")
+            except Exception as e:
+                print(f"✅ None input correctly rejected: {type(e).__name__}")
+                
+        except Exception as e:
+            print(f"Error handling test issue: {e}")
+        
+        print("\n" + "="*80)
+        print("AZURE CERTIFICATE EMBEDDING TESTS COMPLETED")
+        print("="*80)
 
-    asyncio.run(test_embedding_client())
+    # Also test OpenAI for comparison
+    async def test_openai_embedding():
+        """Quick test of OpenAI embedding for comparison"""
+        
+        print("\n" + "="*60)
+        print("COMPARISON: OpenAI Embedding Test")
+        print("="*60)
+        
+        try:
+            openai_client = LiteLLMEmbeddingClient()
+            
+            test_text = "Quick OpenAI embedding test for comparison."
+            response = openai_client.create_embeddings(test_text)
+            
+            print(f"✅ OpenAI embedding successful")
+            print(f"   - Dimensions: {response.dimensions}")
+            print(f"   - Model: {response.model}")
+            print(f"   - Provider: {response.metadata.get('provider', 'N/A')}")
+            
+        except Exception as e:
+            print(f"❌ OpenAI test failed (likely API key not configured): {e}")
+
+    # Run all tests
+    async def run_all_tests():
+        await test_azure_certificate_embedding()
+        await test_openai_embedding()
+
+    # Execute tests
+    asyncio.run(run_all_tests())
