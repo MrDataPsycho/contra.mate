@@ -97,14 +97,14 @@ class LiteLLMChatClient(BaseChatClient):
             token = self._get_azure_token()
             
             azure_params = {
-                "api_key": token,
+                **kwargs,  # Include kwargs first
+                "api_key": token,  # Override with our token (never allow override)
                 "api_base": self.azure_endpoint,
                 "api_version": self.api_version,
-                "api_type": "azure",  # Explicitly set for LiteLLM
-                **kwargs
+                # Note: api_type is not needed for newer LiteLLM versions
             }
             return azure_params
-        return {"api_key": self.api_key, **kwargs}
+        return {**kwargs, "api_key": self.api_key}  # Override with our API key
 
     def _get_model(self, model: Optional[str] = None) -> str:
         """Get model name, using default if not specified"""
@@ -345,59 +345,212 @@ class LiteLLMChatClient(BaseChatClient):
 
 if __name__ == "__main__":
     import asyncio
+    import time
 
-    async def test_client():
-        # Test OpenAI
-        print("Testing OpenAI LiteLLM client...")
-        client = LiteLLMChatClient()
-
+    async def test_azure_certificate_chat():
+        """Comprehensive test for Azure OpenAI chat with certificate-based authentication"""
+        
+        print("="*80)
+        print("TESTING LiteLLM Chat Client with Azure Certificate Authentication")
+        print("="*80)
+        
+        # Test messages
         test_messages = [
-            {"role": "user", "content": "Hello, this is a test message."}
+            {"role": "user", "content": "Hello! Please introduce yourself and explain what you can help with in 2-3 sentences."}
         ]
+        
+        complex_messages = [
+            {"role": "system", "content": "You are a helpful AI assistant specialized in explaining technical concepts clearly."},
+            {"role": "user", "content": "Explain what Azure OpenAI is and how certificate-based authentication works in about 100 words."}
+        ]
+        
+        # Test 1: Azure Client with Settings (Certificate-based)
+        print("\n" + "="*60)
+        print("TEST 1: Azure Client Initialization (Settings-based)")
+        print("="*60)
+        
+        try:
+            print("Initializing Azure OpenAI chat client with certificate authentication...")
+            azure_client = LiteLLMChatClient(use_azure=True)
+            
+            print(f"✅ Client initialized successfully")
+            print(f"   - Model: {azure_client.default_model}")
+            print(f"   - Endpoint: {azure_client.azure_endpoint}")
+            print(f"   - API Version: {azure_client.api_version}")
+            print(f"   - Token Provider: {'Available' if azure_client.token_provider else 'Missing'}")
+            print(f"   - Temperature: {azure_client.default_temperature}")
+            print(f"   - Max Tokens: {azure_client.default_max_tokens}")
+            
+        except Exception as e:
+            print(f"❌ Client initialization failed: {e}")
+            return
+        
+        # Test 2: Synchronous Chat Completion
+        print("\n" + "="*60)
+        print("TEST 2: Synchronous Chat Completion")
+        print("="*60)
+        
+        try:
+            print("Creating chat completion synchronously...")
+            start_time = time.time()
+            
+            response = azure_client.chat_completion(test_messages)
+            
+            end_time = time.time()
+            duration = end_time - start_time
+            
+            print(f"✅ Sync chat completion successful")
+            print(f"   - Response: {response.content[:100]}..." if len(response.content) > 100 else f"   - Response: {response.content}")
+            print(f"   - Model used: {response.model}")
+            print(f"   - Duration: {duration:.2f} seconds")
+            print(f"   - Prompt tokens: {response.usage.get('prompt_tokens', 'N/A')}")
+            print(f"   - Completion tokens: {response.usage.get('completion_tokens', 'N/A')}")
+            print(f"   - Total tokens: {response.usage.get('total_tokens', 'N/A')}")
+            print(f"   - Provider: {response.metadata.get('provider', 'N/A')}")
+            print(f"   - Finish reason: {response.finish_reason}")
+            
+        except Exception as e:
+            print(f"❌ Sync chat completion failed: {e}")
+            return
+        
+        # Test 3: Asynchronous Chat Completion
+        print("\n" + "="*60)
+        print("TEST 3: Asynchronous Chat Completion")
+        print("="*60)
+        
+        try:
+            print("Creating chat completion asynchronously...")
+            start_time = time.time()
+            
+            async_response = await azure_client.async_chat_completion(complex_messages)
+            
+            end_time = time.time()
+            duration = end_time - start_time
+            
+            print(f"✅ Async chat completion successful")
+            print(f"   - Response: {async_response.content[:150]}..." if len(async_response.content) > 150 else f"   - Response: {async_response.content}")
+            print(f"   - Model used: {async_response.model}")
+            print(f"   - Duration: {duration:.2f} seconds")
+            print(f"   - Total tokens: {async_response.usage.get('total_tokens', 'N/A')}")
+            
+        except Exception as e:
+            print(f"❌ Async chat completion failed: {e}")
+        
+        # Test 4: Different Temperature and Max Tokens
+        print("\n" + "="*60)
+        print("TEST 4: Custom Parameters (Temperature & Max Tokens)")
+        print("="*60)
+        
+        try:
+            print("Testing with custom temperature and max tokens...")
+            
+            creative_messages = [
+                {"role": "user", "content": "Write a creative haiku about Azure cloud computing."}
+            ]
+            
+            creative_response = azure_client.chat_completion(
+                creative_messages,
+                temperature=0.9,
+                max_tokens=100
+            )
+            
+            print(f"✅ Custom parameters test successful")
+            print(f"   - Creative response: {creative_response.content}")
+            print(f"   - Tokens used: {creative_response.usage.get('total_tokens', 'N/A')}")
+            
+        except Exception as e:
+            print(f"❌ Custom parameters test failed: {e}")
+        
+        # Test 5: Direct Certificate Parameters
+        print("\n" + "="*60)
+        print("TEST 5: Direct Certificate Parameters")
+        print("="*60)
+        
+        try:
+            print("Testing with direct certificate parameters...")
+            
+            direct_client = LiteLLMChatClient(
+                use_azure=True,
+                token_provider=get_cert_token_provider(settings.azure_openai),
+                azure_endpoint=settings.azure_openai.azure_endpoint,
+                api_version=settings.azure_openai.api_version,
+                model=settings.azure_openai.model
+            )
+            
+            print(f"✅ Direct parameters client initialized successfully")
+            
+            # Test with direct client
+            direct_messages = [
+                {"role": "user", "content": "Confirm you're running on Azure OpenAI with certificate authentication."}
+            ]
+            
+            direct_response = direct_client.chat_completion(direct_messages)
+            
+            print(f"✅ Direct parameters chat completion successful")
+            print(f"   - Response: {direct_response.content[:100]}..." if len(direct_response.content) > 100 else f"   - Response: {direct_response.content}")
+            print(f"   - Model: {direct_response.model}")
+            
+        except Exception as e:
+            print(f"❌ Direct parameters test failed: {e}")
+        
+        # Test 6: Error Handling
+        print("\n" + "="*60)
+        print("TEST 6: Error Handling")
+        print("="*60)
+        
+        try:
+            print("Testing error handling with invalid input...")
+            
+            # Test empty messages
+            try:
+                azure_client.chat_completion([])
+                print("❌ Empty messages should have failed")
+            except Exception as e:
+                print(f"✅ Empty messages correctly rejected: {type(e).__name__}")
+            
+            # Test invalid temperature
+            try:
+                azure_client.chat_completion(test_messages, temperature=2.5)
+                print("⚠️ High temperature accepted (might be valid)")
+            except Exception as e:
+                print(f"✅ Invalid temperature rejected: {type(e).__name__}")
+                
+        except Exception as e:
+            print(f"Error handling test issue: {e}")
+        
+        print("\n" + "="*80)
+        print("AZURE CERTIFICATE CHAT TESTS COMPLETED")
+        print("="*80)
 
-        # Test sync
-        print("Testing sync completion...")
-        response = client.chat_completion(test_messages)
-        print(f"Sync response: {response.content}")
+    # Also test OpenAI for comparison
+    async def test_openai_chat():
+        """Quick test of OpenAI chat for comparison"""
+        
+        print("\n" + "="*60)
+        print("COMPARISON: OpenAI Chat Test")
+        print("="*60)
+        
+        try:
+            openai_client = LiteLLMChatClient()
+            
+            test_messages = [
+                {"role": "user", "content": "Quick OpenAI chat test. Respond with 'OpenAI working!'"}
+            ]
+            
+            response = openai_client.chat_completion(test_messages)
+            
+            print(f"✅ OpenAI chat successful")
+            print(f"   - Response: {response.content}")
+            print(f"   - Model: {response.model}")
+            print(f"   - Provider: {response.metadata.get('provider', 'N/A')}")
+            
+        except Exception as e:
+            print(f"❌ OpenAI test failed (likely API key not configured): {e}")
 
-        # Test async
-        print("Testing async completion...")
-        async_response = await client.async_chat_completion(test_messages)
-        print(f"Async response: {async_response.content}")
+    # Run all tests
+    async def run_all_tests():
+        await test_azure_certificate_chat()
+        await test_openai_chat()
 
-        # # Test Azure OpenAI with certificate-based authentication
-        # try:
-        #     print("\nTesting Azure OpenAI LiteLLM client (certificate-based authentication)...")
-        #     azure_client = LiteLLMChatClient(use_azure=True)
-            
-        #     azure_messages = [
-        #         {"role": "user", "content": "Hello from Azure OpenAI via LiteLLM!"}
-        #     ]
-            
-        #     azure_response = azure_client.chat_completion(azure_messages)
-        #     print(f"Azure response: {azure_response.content}")
-            
-        # except Exception as e:
-        #     print(f"Azure certificate test skipped (likely not configured): {e}")
-
-        # # Test Azure OpenAI with direct certificate parameters
-        # try:
-        #     print("\nTesting Azure OpenAI LiteLLM client (with direct certificate params)...")
-            
-        #     # Example of how to use direct certificate parameters
-        #     azure_direct_client = LiteLLMChatClient(
-        #         use_azure=True,
-        #         token_provider=get_cert_token_provider(settings.azure_openai),
-        #         azure_endpoint=settings.azure_openai.azure_endpoint,
-        #         api_version=settings.azure_openai.api_version,
-        #         model=settings.azure_openai.model
-        #     )
-            
-        #     print("Azure direct certificate client initialized successfully")
-        #     azure_response = azure_direct_client.chat_completion(azure_messages)
-        #     print(f"Azure direct response: {azure_response.content}")
-            
-        # except Exception as e:
-        #     print(f"Azure direct certificate params test: {e}")
-
-    asyncio.run(test_client())
+    # Execute tests
+    asyncio.run(run_all_tests())
