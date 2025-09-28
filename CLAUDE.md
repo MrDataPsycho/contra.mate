@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - The PostgreSQL is used to store the metadata related to CUAD dataset and any other relational data.
 - The OpenSearch is used as the vector database to store the document embeddings and perform similarity search
 - The OpenSearch Dashboards is used as the web interface to visualize and analyze the search data
-- The Frontend is a Next.js application located in `frontend/` directory, TypeScript Next.js 15 starter template for AI-powered applications:
+- The Frontend is a Next.js application located in `frontend/` directory, TypeScript Next.js 15 starter template for AI-powered 
 
 
 ## Development Commands
@@ -28,8 +28,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Manager
 
-This project strictly uses **pnpm**. Do not use npm or yarn.
-Python uses uv package manager.
+- This project strictly uses **pnpm**. Do not use npm or yarn.
+- Python uses uv package manager.
+
+# Project Guidiles in General
+- Do not create any description file like md during the code generation unless specifically asked for.
+
+# Project Guidelines for Python
+- Do use relative imports in python always use contramate as the root package.
+- When ever possible if the modules are imported to another module first reimport them in the module level __init__.py file and then import from the package. For example: if you want to import `DynamoDBConversationAdapter` from `src/contramate/dbs/adapters/dynamodb_conversation.py` first import it in `src/contramate/dbs/adapters/__init__.py` and then import it from `contramate.dbs. 
+- Do not reimport interfaces import them from root package.
+
 
 ## Architecture
 
