@@ -19,6 +19,7 @@ dependencies = [
     "openai>=1.108.1",
     "litellm>=1.40.0,<1.50.0",
     "azure-identity>=1.25.0",
+    "pymupdf4llm>=0.0.27",
 ]
 
 [project.scripts]

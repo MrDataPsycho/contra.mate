@@ -29,6 +29,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Package Manager
 
 This project strictly uses **pnpm**. Do not use npm or yarn.
+Python uses uv package manager.
 
 ## Architecture
 
@@ -50,9 +51,9 @@ This is a TypeScript Next.js 15 starter template for AI-powered applications:
 
 ### AI Integration
 - Uses AI SDK 5's `generateText()` for non-streaming responses
-- Configured for GPT-5 via OpenAI provider
-- API route at `/api/chat` expects `{ message: string }` and returns `{ response: string }`
-- Requires `OPENAI_API_KEY` in `.env.local`
+- Configured for GPT-5 or GPT 4.1 via OpenAI provider
+- API route at `/api/chat` expects `{ message: string }` and returns `{ response: string }` in the frontend for Testing Purpose
+- Requires `OPENAI_API_KEY` in `.env.local` in the frontend directory
 
 ### UI Components
 - **shadcn/ui** configured with:
@@ -141,43 +142,13 @@ contramate/
 - **OpenSearch**: Vector search engine with disabled security for local development
 - **OpenSearch Dashboards**: Web interface for search analytics
 
-## Development Notes
-
-### Current State
-- **Backend**: FastAPI application with functional status services and centralized configuration
-- **Frontend**: Production-optimized Next.js application with TypeScript, Tailwind CSS, and API client
-- **Infrastructure**: Complete Docker setup with uv-optimized builds and all required services
-- **Settings Management**: Pydantic-based settings with automatic environment loading from `.envs/local.env`
-- **Database Services**: Working connection status checks for PostgreSQL, OpenSearch, and DynamoDB
-- **Dependencies**: Complete stack with FastAPI, OpenSearch, PostgreSQL, DynamoDB, SQLModel, and Pydantic Settings
-
-### Current Implementation Status
-- **FastAPI Backend**: Complete API structure with CORS, health endpoints, and working status services
-- **Next.js Frontend**: Production-ready with TypeScript, Tailwind CSS, and API client
-- **Docker Configuration**: Multi-service setup with OpenSearch, PostgreSQL, DynamoDB (uv-optimized backend)
-- **Centralized Settings**: Pydantic-based configuration with environment groups
-- **Status Services**: Real connection testing for all databases and search services
-- **API Endpoints**: Health check, contracts, search, and functional database status endpoints
-
-### Next Development Areas
-1. **Database Connections**: Implement actual connections to PostgreSQL, OpenSearch, and DynamoDB
-2. **CUAD Dataset Integration**: Loading and processing contract data
-3. **OpenSearch Integration**: Document indexing, vector embeddings, and similarity search
-4. **LLM Agent Implementation**: Conversational AI for contract understanding
-5. **Frontend UI**: Build contract search and analysis interface
-6. **Workflow Management**: Processing pipelines for contract analysis
-7. **Search Analytics**: Utilizing OpenSearch Dashboards for query insights
-
 ### Build and Run Commands
 ```bash
-# Install backend package
-pip install .
-
 # Run backend locally (development)
-uvicorn src.contramate.api.main:app --host 0.0.0.0 --port 8000 --reload
+uv run uvicorn src.contramate.api.main:app --host 0.0.0.0 --port 8000 --reload
 
 # Run frontend locally (development)
-cd frontend && npm run dev
+cd frontend && pnpm dev
 
 # Run full stack with Docker Compose
 docker-compose up
@@ -189,26 +160,12 @@ docker-compose up
   - OpenSearch Dashboards: http://localhost:5601
   - OpenSearch API: http://localhost:9200
 
-### Environment Requirements
-- Python >= 3.12 with uv package manager
-- Node.js 20+ for Next.js frontend
-- Docker and Docker Compose for full stack deployment
-- OpenAI API key for LLM services (configured in `.envs/local.env`)
-
 ## AI Client System
 
 ### Client Architecture
 **Location**: `src/contramate/utils/clients/ai/`
 
 The project implements a comprehensive AI client system with support for multiple providers and both chat and embedding capabilities:
-
-#### Available Clients
-- **OpenAIChatClient**: Direct OpenAI API integration for chat completions
-- **LiteLLMChatClient**: Multi-provider chat client supporting OpenAI and Azure OpenAI via LiteLLM
-- **AzureOpenAIChatClient**: Native Azure OpenAI client with certificate-based authentication
-- **OpenAIEmbeddingClient**: OpenAI embeddings for vector search
-- **LiteLLMEmbeddingClient**: Multi-provider embeddings via LiteLLM
-- **AzureOpenAIEmbeddingClient**: Azure OpenAI embeddings with certificate auth
 
 #### Client Features
 - **Unified Interface**: All clients inherit from `BaseChatClient` or `BaseEmbeddingClient`
@@ -237,21 +194,6 @@ The project implements a comprehensive AI client system with support for multipl
 - **summery_retriver_tool**: Contract summary retrieval by CWID (implementation pending)
 - **compare_contract_tool**: Contract comparison functionality (implementation pending)
 
-### Settings & Configuration
-
-**Configuration Groups**:
-- `settings.postgres` - PostgreSQL database settings
-- `settings.dynamodb` - DynamoDB settings
-- `settings.opensearch` - OpenSearch configuration
-- `settings.openai` - OpenAI API settings
-- `settings.azure_openai` - Azure OpenAI certificate-based authentication settings
-- `settings.app` - Application configuration
-
-**Azure OpenAI Configuration**:
-- Certificate-based authentication via `azure-identity`
-- Configurable via `AZURE_OPENAI_*` environment variables
-- Token provider utility in `contramate.utils.auth.certificate_provider`
-
 ### Current Implementation Status
 
 #### ✅ Completed Components
@@ -266,56 +208,3 @@ The project implements a comprehensive AI client system with support for multipl
 - **Vector Store Integration**: OpenSearch connection and embedding storage
 - **Tool Implementations**: Actual database queries and vector search functionality
 - **Frontend Integration**: Agent system integration with Next.js interface
-
-#### 📋 Dependencies
-- **Python**: 3.12 with `uv` package manager
-- **LLM Dependencies**: `openai>=1.108.1`, `litellm>=1.40.0,<1.50.0`, `azure-identity>=1.25.0`
-- **Database**: `psycopg2-binary`, `boto3`, `opensearch-py`, `sqlmodel`
-- **Framework**: `fastapi`, `pydantic-settings`, `loguru`
-
-#### 🔧 Agent Tool Requirements
-**Current Status**: Tools have placeholder implementations that return informative messages
-**Next Steps**:
-1. Implement database models for contracts and summaries
-2. Create vector store utilities for OpenSearch integration
-3. Connect tools to actual data sources
-4. Add proper error handling and validation
-
-## Notes for AI Agents
-- **Architecture**: Next.js frontend + FastAPI backend + OpenSearch + PostgreSQL + DynamoDB
-- **Settings Management**: Centralized Pydantic settings in `src/contramate/utils/settings/core.py`
-- **Environment Loading**: Automatic loading from `.envs/local.env` or system environment
-- **Status Services**: Working connection checks for all databases accessible via API endpoints
-- **Entry Points**:
-  - Backend: `src/contramate/api/main.py`
-  - Settings: `src/contramate/utils/settings/core.py`
-  - AI Clients: `src/contramate/utils/clients/ai/`
-  - Agents: `src/contramate/core/agents/`
-  - Frontend: Next.js app in `frontend/` directory
-  - Environment: `.envs/local.env`
-- **Development**: All services containerized with uv-optimized builds, security disabled for local development
-- **API Endpoints**:
-  - `/api/postgres/status` - PostgreSQL connection status
-  - `/api/opensearch/status` - OpenSearch cluster health
-  - `/api/dynamodb/status` - DynamoDB connection status
-- **AI Client Usage**: Import from `contramate.utils.clients.ai` - all clients support both OpenAI and Azure OpenAI
-- **Agent Integration**: Agents work with any chat client via unified interface
-- **Tool System**: LLM-powered tool selection and execution for contract understanding
-- **Testing**: Use OpenSearch Dashboards (port 5601) for search visualization and debugging
-
-
-### CLI Status Checker
-
-  Location: src/tools/status_checker.py
-  Features:
-
-  Service Mappings:
-  - ✅ Short Names: postgres, dynamodb, opensearch, openai, litellm
-  - ✅ Dependency Injection: Proper client injection for AI services
-  - ✅ Service Types: Database/Search services and AI services
-
-  Commands:
-  - ✅ Single Service: python src/tools/status_checker.py check postgres
-  - ✅ All Services: python src/tools/status_checker.py check all
-  - ✅ List Services: python src/tools/status_checker.py list-services
-  - ✅ Verbose Mode: --verbose flag for detailed output
