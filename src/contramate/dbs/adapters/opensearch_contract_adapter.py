@@ -1,12 +1,16 @@
 """OpenSearch adapter for contract vector database operations"""
 
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Union
 from opensearchpy import OpenSearch, RequestsHttpConnection
-from opensearchpy.exceptions import NotFoundError, RequestError
+from opensearchpy.exceptions import NotFoundError
 from loguru import logger
 
 from contramate.dbs.interfaces.vector_store import VectorDBABC
 from contramate.utils.settings.core import OpenSearchSettings
+from contramate.utils.clients.ai.openai_embedding_client import OpenAIEmbeddingClient
+from contramate.utils.clients.ai.litellm_embedding_client import LiteLLMEmbeddingClient
+from contramate.utils.clients.ai.azure_openai_embedding_client import AzureOpenAIEmbeddingClient
+from contramate.utils.clients.ai.base import BaseEmbeddingClient
 
 
 class OpenSearchContractAdapter(VectorDBABC):
@@ -16,7 +20,8 @@ class OpenSearchContractAdapter(VectorDBABC):
         self,
         opensearch_settings: OpenSearchSettings,
         index_name: Optional[str] = None,
-        embedding_dimension: int = 3072  # Default for text-embedding-3-large
+        embedding_dimension: int = 3072,  # Default for text-embedding-3-large
+        embedding_client: Optional[BaseEmbeddingClient] = None
     ):
         """
         Initialize OpenSearch contract adapter
@@ -25,10 +30,14 @@ class OpenSearchContractAdapter(VectorDBABC):
             opensearch_settings: OpenSearch configuration settings
             index_name: Override index name (uses opensearch_settings.get_index_name() if None)
             embedding_dimension: Dimension of the embedding vectors
+            embedding_client: Embedding client for generating vectors (auto-selected if None)
         """
         self.opensearch_settings = opensearch_settings
         self.index_name = index_name or opensearch_settings.get_index_name()
         self.embedding_dimension = embedding_dimension
+
+        # Initialize embedding client
+        self.embedding_client = embedding_client or self._get_default_embedding_client()
 
         # Initialize OpenSearch client
         self.client = OpenSearch(
@@ -40,61 +49,39 @@ class OpenSearchContractAdapter(VectorDBABC):
             timeout=30,
         )
 
-        # Create index if it doesn't exist
+        # Check that index exists
         self._ensure_index_exists()
 
-    def _ensure_index_exists(self) -> None:
-        """Create the index if it doesn't exist"""
-        if not self.client.indices.exists(index=self.index_name):
-            index_body = {
-                "settings": {
-                    "number_of_shards": 1,
-                    "number_of_replicas": 0,
-                    "index": {
-                        "knn": True,
-                        "knn.algo_param.ef_search": 100
-                    }
-                },
-                "mappings": {
-                    "properties": {
-                        "contract_id": {"type": "keyword"},
-                        "document_id": {"type": "keyword"},
-                        "content": {"type": "text"},
-                        "embedding": {
-                            "type": "knn_vector",
-                            "dimension": self.embedding_dimension,
-                            "method": {
-                                "name": "hnsw",
-                                "space_type": "cosinesimil",
-                                "engine": "lucene",
-                                "parameters": {
-                                    "ef_construction": 128,
-                                    "m": 24
-                                }
-                            }
-                        },
-                        "metadata": {
-                            "type": "object",
-                            "properties": {
-                                "section": {"type": "keyword"},
-                                "page_number": {"type": "integer"},
-                                "chunk_index": {"type": "integer"},
-                                "contract_type": {"type": "keyword"},
-                                "created_at": {"type": "date"},
-                                "file_path": {"type": "keyword"}
-                            }
-                        }
-                    }
-                }
-            }
+    def _get_default_embedding_client(self) -> BaseEmbeddingClient:
+        """Get default embedding client based on available settings"""
+        try:
+            # Try OpenAI first (most common)
+            from contramate.utils.settings.core import settings
+            if settings.openai.api_key:
+                return OpenAIEmbeddingClient()
+        except Exception:
+            pass
 
-            try:
-                self.client.indices.create(index=self.index_name, body=index_body)
-                logger.info(f"Created OpenSearch index: {self.index_name}")
-            except RequestError as e:
-                if "resource_already_exists_exception" not in str(e):
-                    raise
-                logger.info(f"Index {self.index_name} already exists")
+        try:
+            # Try Azure OpenAI with certificate auth
+            return AzureOpenAIEmbeddingClient()
+        except Exception:
+            pass
+
+        try:
+            # Try LiteLLM as fallback
+            return LiteLLMEmbeddingClient()
+        except Exception:
+            pass
+
+        raise ValueError("No valid embedding client could be initialized. Please configure OpenAI, Azure OpenAI, or LiteLLM settings.")
+
+    def _ensure_index_exists(self) -> None:
+        """Check that the index exists, raise error if it doesn't"""
+        if not self.client.indices.exists(index=self.index_name):
+            raise ValueError(f"OpenSearch index '{self.index_name}' does not exist. Please create the index first using the ETL pipeline.")
+
+        logger.info(f"OpenSearch index '{self.index_name}' exists and is ready")
 
     def save(self) -> None:
         """Save/flush any pending operations to OpenSearch"""
@@ -108,11 +95,8 @@ class OpenSearchContractAdapter(VectorDBABC):
     def load(self) -> None:
         """Load/verify the OpenSearch index exists"""
         try:
-            if not self.client.indices.exists(index=self.index_name):
-                logger.warning(f"Index {self.index_name} does not exist, creating it")
-                self._ensure_index_exists()
-            else:
-                logger.info(f"Index {self.index_name} loaded successfully")
+            self._ensure_index_exists()
+            logger.info(f"Index {self.index_name} loaded successfully")
         except Exception as e:
             logger.error(f"Error loading index {self.index_name}: {e}")
             raise
@@ -121,62 +105,140 @@ class OpenSearchContractAdapter(VectorDBABC):
         self,
         query: str,
         top_k: int = 20,
-        filters: Optional[Dict[str, Any]] = None
+        filters: Optional[Dict[str, Any]] = None,
+        text_weight: float = 0.3,
+        embedding_weight: float = 0.7,
+        use_hybrid: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        Search for similar contract documents using text query
+        Search for similar contract documents using hybrid search (text + vector)
 
         Args:
             query: Text query to search for
             top_k: Number of top results to return
             filters: Additional filters to apply (contract_id, contract_type, etc.)
+            text_weight: Weight for text search component (default 0.3)
+            embedding_weight: Weight for vector search component (default 0.7)
+            use_hybrid: Whether to use hybrid search or text-only (default True)
 
         Returns:
             List of search results with metadata
         """
-        search_body = {
-            "size": top_k,
-            "query": {
-                "bool": {
-                    "should": [
-                        {
-                            "match": {
-                                "content": {
-                                    "query": query,
-                                    "boost": 1.0
+        # Generate embedding for hybrid search
+        query_embedding = None
+        if use_hybrid:
+            try:
+                embedding_response = self.embedding_client.create_embeddings(query)
+                query_embedding = embedding_response.embeddings[0]
+                logger.info(f"Generated embedding for query: {query[:50]}...")
+            except Exception as e:
+                logger.warning(f"Failed to generate embedding for query, falling back to text-only search: {e}")
+                use_hybrid = False
+
+        # Build search query
+        if use_hybrid and query_embedding:
+            # Hybrid search with both text and vector
+            search_body = {
+                "size": top_k,
+                "query": {
+                    "hybrid": {
+                        "queries": [
+                            {
+                                "match": {
+                                    "content": {
+                                        "query": query,
+                                        "boost": text_weight
+                                    }
+                                }
+                            },
+                            {
+                                "knn": {
+                                    "embedding": {
+                                        "vector": query_embedding,
+                                        "k": top_k,
+                                        "boost": embedding_weight
+                                    }
                                 }
                             }
+                        ]
+                    }
+                },
+                "_source": ["contract_id", "document_id", "content", "metadata"],
+                "highlight": {
+                    "fields": {
+                        "content": {
+                            "fragment_size": 150,
+                            "number_of_fragments": 3
                         }
-                    ]
-                }
-            },
-            "_source": ["contract_id", "document_id", "content", "metadata"],
-            "highlight": {
-                "fields": {
-                    "content": {
-                        "fragment_size": 150,
-                        "number_of_fragments": 3
                     }
                 }
             }
-        }
+        else:
+            # Text-only search fallback
+            search_body = {
+                "size": top_k,
+                "query": {
+                    "bool": {
+                        "should": [
+                            {
+                                "match": {
+                                    "content": {
+                                        "query": query,
+                                        "boost": 1.0
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "_source": ["contract_id", "document_id", "content", "metadata"],
+                "highlight": {
+                    "fields": {
+                        "content": {
+                            "fragment_size": 150,
+                            "number_of_fragments": 3
+                        }
+                    }
+                }
+            }
 
         # Apply filters if provided
         if filters:
             filter_clauses = []
-            for key, value in filters.items():
-                if key == "contract_id":
-                    filter_clauses.append({"term": {"contract_id": value}})
-                elif key == "contract_type":
-                    filter_clauses.append({"term": {"metadata.contract_type": value}})
-                elif key == "section":
-                    filter_clauses.append({"term": {"metadata.section": value}})
-                else:
-                    # Generic metadata filter
-                    filter_clauses.append({"term": {f"metadata.{key}": value}})
+
+            # Handle documents filter with project_reference_doc_id construction
+            if "documents" in filters:
+                documents_filter = filters["documents"]
+                project_reference_doc_ids = [
+                    f"{doc.get('project_id', '')}-{doc.get('reference_doc_id', '')}"
+                    for doc in documents_filter
+                    if doc.get("project_id") and doc.get("reference_doc_id")
+                ]
+
+                if project_reference_doc_ids:
+                    filter_clauses.append({"terms": {"project_reference_doc_id": project_reference_doc_ids}})
+
+                    logger.info(f"Applied documents filter for project_reference_doc_ids: {project_reference_doc_ids}")
 
             if filter_clauses:
-                search_body["query"]["bool"]["filter"] = filter_clauses
+                if use_hybrid and query_embedding:
+                    # For hybrid search, add filters to both text and vector queries
+                    for query_item in search_body["query"]["hybrid"]["queries"]:
+                        if "match" in query_item:
+                            # Text query - wrap in bool with filter
+                            original_match = query_item.pop("match")
+                            query_item["bool"] = {
+                                "must": [{"match": original_match}],
+                                "filter": filter_clauses
+                            }
+                        elif "knn" in query_item:
+                            # Vector query - add filter to knn
+                            query_item["knn"]["embedding"]["filter"] = {
+                                "bool": {"filter": filter_clauses}
+                            }
+                else:
+                    # For text-only search
+                    search_body["query"]["bool"]["filter"] = filter_clauses
 
         try:
             response = self.client.search(index=self.index_name, body=search_body)
@@ -194,7 +256,8 @@ class OpenSearchContractAdapter(VectorDBABC):
                 }
                 results.append(result)
 
-            logger.info(f"Found {len(results)} results for query: {query[:50]}...")
+            search_type = "hybrid" if (use_hybrid and query_embedding) else "text-only"
+            logger.info(f"Found {len(results)} results for {search_type} query: {query[:50]}...")
             return results
 
         except Exception as e:
