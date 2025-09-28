@@ -9,10 +9,11 @@ This package contains:
 # Import from adapters package
 from contramate.dbs.adapters import DynamoDBConversationAdapter
 
-# Import from models package  
-from contramate.dbs.models import FeedbackType
+# Import from models package
+from contramate.dbs.models import FeedbackType, ContractAsmd
 
 __all__ = [
     "DynamoDBConversationAdapter",
     "FeedbackType",
+    "ContractAsmd",
 ]

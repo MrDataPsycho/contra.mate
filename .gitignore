@@ -111,7 +111,7 @@ Thumbs.db
 *.joblib
 *.h5
 *.model
-models/
+models/*
 checkpoints/
 
 # Vector database files

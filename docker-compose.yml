@@ -14,7 +14,7 @@ services:
       # - OLLAMA_BASE_URL=http://172.17.0.1:11434
       - RUNTIME_ENV=local
       - HOST_SYSTEM=container
-      - VECTOR_INDEX=contracts_oai
+      - OPENSEARCH_INDEX_NAME=contracts-test
     # volumes:
     #   - ./vectordb:/app/vectordb
     networks:

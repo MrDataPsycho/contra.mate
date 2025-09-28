@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional
 import aioboto3
 
 from contramate.utils.settings.core import settings
-from contramate.dbs.models import FeedbackType
+from contramate.dbs.models.conversation import FeedbackType
 from contramate.dbs.interfaces.conversation_store import AbstractConversationRepository
 
 logger = logging.getLogger(__name__)

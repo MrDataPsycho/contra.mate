@@ -38,6 +38,7 @@ class OpenSearchSettings(ABCBaseSettings):
     verify_certs: bool = Field(default=False, description="Verify SSL certificates")
     username: str | None = Field(default=None, description="OpenSearch username")
     password: str | None = Field(default=None, description="OpenSearch password")
+    index_name: str | None = Field(default=None, description="OpenSearch index name")
 
     model_config = ABCBaseSettings.model_config.copy()
     model_config["env_prefix"] = "OPENSEARCH_"
@@ -47,6 +48,15 @@ class OpenSearchSettings(ABCBaseSettings):
         """Get OpenSearch endpoint URL"""
         protocol = "https" if self.use_ssl else "http"
         return f"{protocol}://{self.host}:{self.port}"
+
+    def get_index_name(self) -> str:
+        """Get index name from environment or fallback to catalog default"""
+        if self.index_name:
+            return self.index_name
+
+        # Import here to avoid circular import
+        from contramate.dbs.catalog import IndexName
+        return IndexName.default()
 
 
 class OpenAISettings(ABCBaseSettings):

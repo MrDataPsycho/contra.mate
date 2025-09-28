@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
-from contramate.dbs.models import FeedbackType
+from contramate.dbs.models.conversation import FeedbackType
 
 
 class AbstractConversationRepository(ABC):
