@@ -6,7 +6,7 @@ from litellm import AuthenticationError, RateLimitError, APIConnectionError, API
 
 from contramate.utils.settings.core import settings
 from contramate.utils.auth.certificate_provider import get_cert_token_provider
-from contramate.utils.clients.ai.base import BaseEmbeddingClient, EmbeddingResponse
+from contramate.llm.base import BaseEmbeddingClient, EmbeddingResponse
 
 logger = logging.getLogger(__name__)
 

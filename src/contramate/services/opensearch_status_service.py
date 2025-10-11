@@ -2,6 +2,8 @@ from opensearchpy import OpenSearch
 from opensearchpy.exceptions import ConnectionError, AuthenticationException, RequestError
 from typing import Dict, Any
 import logging
+from neopipe import Result, Ok, Err
+
 from contramate.utils.settings.core import settings
 
 logger = logging.getLogger(__name__)
@@ -27,8 +29,12 @@ class OpenSearchStatusService:
 
         return OpenSearch(**client_config)
 
-    async def check_status(self) -> Dict[str, Any]:
-        """Check OpenSearch connection status"""
+    async def check_status(self) -> Result[Dict[str, Any], Dict[str, Any]]:
+        """Check OpenSearch connection status
+
+        Returns:
+            Result[Ok, Err]: Ok with status data if successful, Err with error details if failed
+        """
         try:
             client = self.get_client()
 
@@ -40,7 +46,7 @@ class OpenSearchStatusService:
             indices = client.cat.indices(format='json')
             indices_count = len(indices) if indices else 0
 
-            return {
+            return Ok({
                 "connected": True,
                 "status": "healthy",
                 "host": self.config.host,
@@ -54,48 +60,48 @@ class OpenSearchStatusService:
                 "indices_count": indices_count,
                 "version": info.get('version', {}).get('number'),
                 "message": "OpenSearch connection successful"
-            }
+            })
 
         except ConnectionError as e:
             logger.error(f"OpenSearch connection failed: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "connection_error",
                 "host": self.config.host,
                 "port": self.config.port,
                 "error": str(e),
                 "message": "OpenSearch connection failed"
-            }
+            })
         except AuthenticationException as e:
             logger.error(f"OpenSearch authentication failed: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "authentication_error",
                 "host": self.config.host,
                 "port": self.config.port,
                 "error": str(e),
                 "message": "OpenSearch authentication failed"
-            }
+            })
         except RequestError as e:
             logger.error(f"OpenSearch request error: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "request_error",
                 "host": self.config.host,
                 "port": self.config.port,
                 "error": str(e),
                 "message": "OpenSearch request error"
-            }
+            })
         except Exception as e:
             logger.error(f"Unexpected error checking OpenSearch status: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "error",
                 "host": self.config.host,
                 "port": self.config.port,
                 "error": str(e),
                 "message": "Unexpected error occurred"
-            }
+            })
 
 if __name__ == "__main__":
     import asyncio

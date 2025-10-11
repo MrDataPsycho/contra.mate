@@ -7,10 +7,7 @@ from loguru import logger
 
 from contramate.dbs.interfaces.vector_store import VectorDBABC
 from contramate.utils.settings.core import OpenSearchSettings
-from contramate.utils.clients.ai.openai_embedding_client import OpenAIEmbeddingClient
-from contramate.utils.clients.ai.litellm_embedding_client import LiteLLMEmbeddingClient
-from contramate.utils.clients.ai.azure_openai_embedding_client import AzureOpenAIEmbeddingClient
-from contramate.utils.clients.ai.base import BaseEmbeddingClient
+from contramate.llm import OpenAIEmbeddingClient, LiteLLMEmbeddingClient, AzureOpenAIEmbeddingClient, BaseEmbeddingClient
 
 
 class OpenSearchContractAdapter(VectorDBABC):

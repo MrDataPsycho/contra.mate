@@ -1,7 +1,5 @@
 """Services package for business logic"""
 
-from contramate.services.conversation_service import ConversationService
+# Service imports will be added here as they are created
 
-__all__ = [
-    "ConversationService",
-]
+__all__ = []

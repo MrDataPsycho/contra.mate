@@ -4,7 +4,7 @@ from openai import OpenAI, AsyncOpenAI
 from openai import OpenAIError
 
 from contramate.utils.settings.core import settings
-from contramate.utils.clients.ai.base import BaseEmbeddingClient, EmbeddingResponse
+from contramate.llm.base import BaseEmbeddingClient, EmbeddingResponse
 
 logger = logging.getLogger(__name__)
 

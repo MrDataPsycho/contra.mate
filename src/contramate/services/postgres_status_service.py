@@ -1,6 +1,8 @@
 import psycopg2
 from typing import Dict, Any
 import logging
+from neopipe import Result, Ok, Err
+
 from contramate.utils.settings.core import settings
 
 logger = logging.getLogger(__name__)
@@ -15,8 +17,12 @@ class PostgresService:
         """Get PostgreSQL connection string"""
         return self.config.connection_string
 
-    async def check_status(self) -> Dict[str, Any]:
-        """Check PostgreSQL connection status"""
+    async def check_status(self) -> Result[Dict[str, Any], Dict[str, Any]]:
+        """Check PostgreSQL connection status
+
+        Returns:
+            Result[Ok, Err]: Ok with status data if successful, Err with error details if failed
+        """
         try:
             # Test connection
             conn = psycopg2.connect(
@@ -34,7 +40,7 @@ class PostgresService:
 
             conn.close()
 
-            return {
+            return Ok({
                 "connected": True,
                 "status": "healthy",
                 "host": self.config.host,
@@ -42,11 +48,11 @@ class PostgresService:
                 "database": self.config.database,
                 "version": version,
                 "message": "PostgreSQL connection successful"
-            }
+            })
 
         except psycopg2.OperationalError as e:
             logger.error(f"PostgreSQL connection failed: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "error",
                 "host": self.config.host,
@@ -54,10 +60,10 @@ class PostgresService:
                 "database": self.config.database,
                 "error": str(e),
                 "message": "PostgreSQL connection failed"
-            }
+            })
         except Exception as e:
             logger.error(f"Unexpected error checking PostgreSQL status: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "error",
                 "host": self.config.host,
@@ -65,7 +71,7 @@ class PostgresService:
                 "database": self.config.database,
                 "error": str(e),
                 "message": "Unexpected error occurred"
-            }
+            })
 
 if __name__ == "__main__":
     import asyncio

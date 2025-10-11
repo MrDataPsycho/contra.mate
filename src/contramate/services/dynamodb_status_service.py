@@ -3,6 +3,8 @@ from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnect
 from botocore.config import Config
 from typing import Dict, Any
 import asyncio
+from neopipe import Result, Ok, Err
+
 from contramate.utils.settings.core import settings
 from loguru import logger
 
@@ -30,8 +32,12 @@ class DynamoDBStatusService:
             config=config
         )
 
-    async def check_status(self) -> Dict[str, Any]:
-        """Check DynamoDB connection status"""
+    async def check_status(self) -> Result[Dict[str, Any], Dict[str, Any]]:
+        """Check DynamoDB connection status
+
+        Returns:
+            Result[Ok, Err]: Ok with status data if successful, Err with error details if failed
+        """
         try:
             client = self.get_client()
             logger.info("DynamoDB client created successfully")
@@ -48,7 +54,7 @@ class DynamoDBStatusService:
             table_count = len(response.get('TableNames', []))
             logger.info(f"DynamoDB connection successful, found {table_count} tables")
 
-            return {
+            return Ok({
                 "connected": True,
                 "status": "healthy",
                 "endpoint_url": self.config.endpoint_url,
@@ -56,41 +62,41 @@ class DynamoDBStatusService:
                 "table_count": table_count,
                 "tables": response.get('TableNames', []),
                 "message": "DynamoDB connection successful"
-            }
+            })
 
         except asyncio.TimeoutError:
             logger.error("DynamoDB connection timed out")
-            return {
+            return Err({
                 "connected": False,
                 "status": "timeout_error",
                 "endpoint_url": self.config.endpoint_url,
                 "region": self.config.region,
                 "error": "Connection timed out after 10 seconds",
                 "message": "DynamoDB connection timed out - service may not be running"
-            }
+            })
         except (EndpointConnectionError, ConnectTimeoutError) as e:
             logger.error(f"DynamoDB endpoint connection failed: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "connection_error",
                 "endpoint_url": self.config.endpoint_url,
                 "region": self.config.region,
                 "error": str(e),
                 "message": "DynamoDB endpoint unreachable"
-            }
+            })
         except NoCredentialsError as e:
             logger.error(f"DynamoDB credentials error: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "credentials_error",
                 "endpoint_url": self.config.endpoint_url,
                 "region": self.config.region,
                 "error": str(e),
                 "message": "DynamoDB credentials not found or invalid"
-            }
+            })
         except ClientError as e:
             logger.error(f"DynamoDB client error: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "client_error",
                 "endpoint_url": self.config.endpoint_url,
@@ -98,17 +104,17 @@ class DynamoDBStatusService:
                 "error": str(e),
                 "error_code": e.response.get('Error', {}).get('Code'),
                 "message": "DynamoDB client error occurred"
-            }
+            })
         except Exception as e:
             logger.error(f"Unexpected error checking DynamoDB status: {e}")
-            return {
+            return Err({
                 "connected": False,
                 "status": "error",
                 "endpoint_url": self.config.endpoint_url,
                 "region": self.config.region,
                 "error": str(e),
                 "message": "Unexpected error occurred"
-            }
+            })
 
 if __name__ == "__main__":
     import asyncio

@@ -6,7 +6,7 @@ from litellm import AuthenticationError, RateLimitError, APIConnectionError, API
 
 from contramate.utils.settings.core import settings
 from contramate.utils.auth.certificate_provider import get_cert_token_provider
-from contramate.utils.clients.ai.base import BaseChatClient, ChatMessage, ChatResponse
+from contramate.llm.base import BaseChatClient, ChatMessage, ChatResponse
 
 logger = logging.getLogger(__name__)
 

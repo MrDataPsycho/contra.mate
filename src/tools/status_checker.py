@@ -9,9 +9,7 @@ Usage:
 """
 
 import asyncio
-import sys
-from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 import typer
 from rich.console import Console
@@ -19,15 +17,12 @@ from rich.table import Table
 from rich.text import Text
 from rich import box
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from contramate.services.postgres_status_service import PostgresService
 from contramate.services.dynamodb_status_service import DynamoDBStatusService
 from contramate.services.opensearch_status_service import OpenSearchStatusService
 from contramate.services.openai_status_service import OpenAIStatusService
 from contramate.services.litellm_status_service import LiteLLMStatusService
-from contramate.utils.clients.ai import OpenAIChatClient, LiteLLMChatClient
+from contramate.llm import OpenAIChatClient, LiteLLMChatClient
 
 app = typer.Typer(help="Check status of Contramate services")
 console = Console()
@@ -126,7 +121,11 @@ def format_status_response(service_name: str, response: Dict[str, Any]) -> Table
     return table
 
 async def check_service_status(service_key: str, clients: Dict[str, Any]) -> Dict[str, Any]:
-    """Check status of a single service"""
+    """Check status of a single service
+
+    Returns:
+        Dict with status information (unwrapped from Result type)
+    """
     service_config = SERVICE_MAPPINGS.get(service_key)
     if not service_config:
         return {
@@ -149,8 +148,11 @@ async def check_service_status(service_key: str, clients: Dict[str, Any]) -> Dic
         else:
             service = service_config["service_class"]()
 
-        # Check status
-        return await service.check_status()
+        # Check status - returns Result[Ok, Err]
+        result = await service.check_status()
+
+        # Unwrap Result type - both Ok and Err contain the status dict
+        return result.unwrap()
 
     except Exception as e:
         return {

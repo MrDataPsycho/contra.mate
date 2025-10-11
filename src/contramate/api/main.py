@@ -6,7 +6,7 @@ from contramate.services.dynamodb_status_service import DynamoDBStatusService
 from contramate.services.opensearch_status_service import OpenSearchStatusService
 from contramate.services.openai_status_service import OpenAIStatusService
 from contramate.services.litellm_status_service import LiteLLMStatusService
-from contramate.utils.clients.ai import OpenAIChatClient, LiteLLMChatClient
+from contramate.llm import OpenAIChatClient, LiteLLMChatClient
 
 app = FastAPI(
     title="Contramate API",

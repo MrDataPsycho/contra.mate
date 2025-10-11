@@ -1,5 +1,5 @@
 from typing import Union
-from contramate.utils.clients.ai import OpenAIChatClient, LiteLLMChatClient
+from contramate.llm import OpenAIChatClient, LiteLLMChatClient
 from contramate.core.agents.query_rewriter import QueryRewriterAgent
 from contramate.core.agents.tool_executor import ToolExecutorAgent
 from contramate.core.agents.answer_critique import AnswerCritiqueAgent

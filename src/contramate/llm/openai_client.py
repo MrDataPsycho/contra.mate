@@ -1,63 +1,45 @@
 from typing import List, Dict, Any, Optional, Union
 import logging
-from openai import AzureOpenAI, AsyncAzureOpenAI
+from openai import OpenAI, AsyncOpenAI
 from openai import OpenAIError
 
 from contramate.utils.settings.core import settings
-from contramate.utils.auth.certificate_provider import get_cert_token_provider
-from contramate.utils.clients.ai.base import BaseChatClient, ChatMessage, ChatResponse
+from contramate.llm.base import BaseChatClient, ChatMessage, ChatResponse
 
 logger = logging.getLogger(__name__)
 
 
-class AzureOpenAIChatClient(BaseChatClient):
-    """Azure OpenAI chat completion client with certificate-based authentication"""
+class OpenAIChatClient(BaseChatClient):
+    """OpenAI chat completion client with sync and async support"""
 
-    def __init__(self, azure_settings: Optional[object] = None):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         """
-        Initialize Azure OpenAI chat client with certificate authentication
+        Initialize OpenAI client
 
         Args:
-            azure_settings: Azure OpenAI settings (uses global settings if not provided)
+            api_key: OpenAI API key (uses settings if not provided)
+            model: Default model to use (uses settings if not provided)
         """
-        self.azure_settings = azure_settings or settings.azure_openai
-        
-        # Initialize base client
-        super().__init__()
-        
-        self.default_model = self.azure_settings.model
-        self.default_temperature = self.azure_settings.temperature
-        self.default_max_tokens = self.azure_settings.max_tokens
+        super().__init__(api_key=api_key or settings.openai.api_key)
+        self.default_model = model or settings.openai.model
+        self.default_temperature = settings.openai.temperature
+        self.default_max_tokens = settings.openai.max_tokens
 
         # Validate required configuration
-        if not self.azure_settings.tenant_id:
-            raise ValueError("Azure tenant ID is required. Set AZURE_OPENAI_TENANT_ID in environment.")
-        
-        if not self.azure_settings.client_id:
-            raise ValueError("Azure client ID is required. Set AZURE_OPENAI_CLIENT_ID in environment.")
-        
-        if not self.azure_settings.azure_endpoint:
-            raise ValueError("Azure endpoint is required. Set AZURE_OPENAI_AZURE_ENDPOINT in environment.")
+        if not self.api_key:
+            raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY in environment or pass api_key parameter.")
 
-        # Get certificate-based token provider
-        try:
-            self.token_provider = get_cert_token_provider(self.azure_settings)
-        except Exception as e:
-            logger.error(f"Failed to initialize certificate token provider: {e}")
-            raise
+        if not self.default_model:
+            raise ValueError("OpenAI model is required. Set OPENAI_MODEL in environment or pass model parameter.")
 
-        # Initialize Azure OpenAI clients
-        client_config = {
-            "azure_endpoint": self.azure_settings.azure_endpoint,
-            "api_version": self.azure_settings.api_version,
-            "azure_ad_token_provider": self.token_provider
-        }
+        # Initialize sync and async clients
+        client_config = {"api_key": self.api_key}
 
         try:
-            self._sync_client = AzureOpenAI(**client_config)
-            self._async_client = AsyncAzureOpenAI(**client_config)
+            self._sync_client = OpenAI(**client_config)
+            self._async_client = AsyncOpenAI(**client_config)
         except Exception as e:
-            logger.error(f"Failed to initialize Azure OpenAI clients: {e}")
+            logger.error(f"Failed to initialize OpenAI clients: {e}")
             raise
 
     def _get_model(self, model: Optional[str] = None) -> str:
@@ -65,7 +47,7 @@ class AzureOpenAIChatClient(BaseChatClient):
         return model or self.default_model
 
     def _create_response(self, response: Any) -> ChatResponse:
-        """Convert Azure OpenAI response to standardized format"""
+        """Convert OpenAI response to standardized format"""
         choice = response.choices[0]
         usage = response.usage
 
@@ -82,8 +64,7 @@ class AzureOpenAIChatClient(BaseChatClient):
             metadata={
                 "created": response.created,
                 "object": response.object,
-                "system_fingerprint": getattr(response, 'system_fingerprint', None),
-                "provider": "azure_openai"
+                "system_fingerprint": getattr(response, 'system_fingerprint', None)
             }
         )
 
@@ -103,10 +84,10 @@ class AzureOpenAIChatClient(BaseChatClient):
             model: Model to use (optional)
             temperature: Sampling temperature (optional)
             max_tokens: Maximum tokens to generate (optional)
-            **kwargs: Additional parameters for Azure OpenAI API
+            **kwargs: Additional parameters for OpenAI API
 
         Returns:
-            ChatResponse: Standardized chat response
+            ChatResponse: Standardized response
         """
         try:
             normalized_messages = self._normalize_messages(messages)
@@ -115,17 +96,17 @@ class AzureOpenAIChatClient(BaseChatClient):
                 model=self._get_model(model),
                 messages=normalized_messages,
                 temperature=self._get_temperature(temperature),
-                max_tokens=self._get_max_tokens(max_tokens),
+                max_completion_tokens=self._get_max_tokens(max_tokens),
                 **kwargs
             )
 
             return self._create_response(response)
 
         except OpenAIError as e:
-            logger.error(f"Azure OpenAI API error: {e}")
+            logger.error(f"OpenAI API error: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error in Azure OpenAI chat completion: {e}")
+            logger.error(f"Unexpected error in OpenAI chat completion: {e}")
             raise
 
     async def async_chat_completion(
@@ -144,10 +125,10 @@ class AzureOpenAIChatClient(BaseChatClient):
             model: Model to use (optional)
             temperature: Sampling temperature (optional)
             max_tokens: Maximum tokens to generate (optional)
-            **kwargs: Additional parameters for Azure OpenAI API
+            **kwargs: Additional parameters for OpenAI API
 
         Returns:
-            ChatResponse: Standardized chat response
+            ChatResponse: Standardized response
         """
         try:
             normalized_messages = self._normalize_messages(messages)
@@ -156,65 +137,72 @@ class AzureOpenAIChatClient(BaseChatClient):
                 model=self._get_model(model),
                 messages=normalized_messages,
                 temperature=self._get_temperature(temperature),
-                max_tokens=self._get_max_tokens(max_tokens),
+                max_completion_tokens=self._get_max_tokens(max_tokens),
                 **kwargs
             )
 
             return self._create_response(response)
 
         except OpenAIError as e:
-            logger.error(f"Azure OpenAI API error in async chat completion: {e}")
+            logger.error(f"OpenAI API error: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error in Azure OpenAI async chat completion: {e}")
+            logger.error(f"Unexpected error in OpenAI async chat completion: {e}")
             raise
 
-    def stream_completion(
+    def get_available_models(self) -> List[str]:
+        """Get list of available models"""
+        try:
+            models = self._sync_client.models.list()
+            return [model.id for model in models.data]
+        except Exception as e:
+            logger.error(f"Error fetching available models: {e}")
+            return []
+
+    async def async_get_available_models(self) -> List[str]:
+        """Get list of available models (async)"""
+        try:
+            models = await self._async_client.models.list()
+            return [model.id for model in models.data]
+        except Exception as e:
+            logger.error(f"Error fetching available models: {e}")
+            return []
+
+    def chat(
         self,
         messages: List[Union[ChatMessage, Dict[str, str]]],
         model: Optional[str] = None,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        config: Optional[Dict[str, Any]] = None,
         **kwargs
     ) -> str:
         """
-        Streaming chat completion (returns final content)
+        Simplified chat method for backward compatibility with agents
 
         Args:
             messages: List of chat messages
             model: Model to use (optional)
             temperature: Sampling temperature (optional)
             max_tokens: Maximum tokens to generate (optional)
-            **kwargs: Additional parameters for Azure OpenAI API
+            config: Additional configuration (e.g., response_format)
+            **kwargs: Additional parameters for OpenAI API
 
         Returns:
-            str: Complete response content
+            str: Response content
         """
-        try:
-            normalized_messages = self._normalize_messages(messages)
+        # Merge config into kwargs if provided
+        if config:
+            kwargs.update(config)
 
-            response = self._sync_client.chat.completions.create(
-                model=self._get_model(model),
-                messages=normalized_messages,
-                temperature=self._get_temperature(temperature),
-                max_tokens=self._get_max_tokens(max_tokens),
-                stream=True,
-                **kwargs
-            )
-
-            content_chunks = []
-            for chunk in response:
-                if chunk.choices[0].delta.content is not None:
-                    content_chunks.append(chunk.choices[0].delta.content)
-
-            return "".join(content_chunks)
-
-        except OpenAIError as e:
-            logger.error(f"Azure OpenAI API error in streaming completion: {e}")
-            raise
-        except Exception as e:
-            logger.error(f"Unexpected error in Azure OpenAI streaming completion: {e}")
-            raise
+        response = self.chat_completion(
+            messages=messages,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **kwargs
+        )
+        return response.content
 
     def select_tool(
         self,
@@ -234,7 +222,7 @@ class AzureOpenAIChatClient(BaseChatClient):
             model: Model to use (optional)
             temperature: Sampling temperature (optional)
             max_tokens: Maximum tokens to generate (optional)
-            **kwargs: Additional parameters for Azure OpenAI API
+            **kwargs: Additional parameters for OpenAI API
 
         Returns:
             List[Any]: Tool calls from the response
@@ -246,7 +234,7 @@ class AzureOpenAIChatClient(BaseChatClient):
                 model=self._get_model(model),
                 messages=normalized_messages,
                 temperature=self._get_temperature(temperature),
-                max_tokens=self._get_max_tokens(max_tokens),
+                max_completion_tokens=self._get_max_tokens(max_tokens),
                 tools=tools,
                 tool_choice="auto",
                 **kwargs
@@ -255,35 +243,31 @@ class AzureOpenAIChatClient(BaseChatClient):
             return response.choices[0].message.tool_calls or []
 
         except OpenAIError as e:
-            logger.error(f"Azure OpenAI API error in tool selection: {e}")
+            logger.error(f"OpenAI API error in tool selection: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error in Azure OpenAI tool selection: {e}")
+            logger.error(f"Unexpected error in OpenAI tool selection: {e}")
             raise
 
 
 if __name__ == "__main__":
     import asyncio
 
-    async def test_azure_client():
-        try:
-            client = AzureOpenAIChatClient()
+    async def test_client():
+        client = OpenAIChatClient()
 
-            test_messages = [
-                {"role": "user", "content": "Hello, this is a test message for Azure OpenAI."}
-            ]
+        test_messages = [
+            {"role": "user", "content": "Hello, this is a test message."}
+        ]
 
-            # Test sync
-            print("Testing sync completion...")
-            response = client.chat_completion(test_messages)
-            print(f"Sync response: {response.content}")
+        # Test sync
+        print("Testing sync completion...")
+        response = client.chat_completion(test_messages)
+        print(f"Sync response: {response.content}")
 
-            # Test async
-            print("Testing async completion...")
-            async_response = await client.async_chat_completion(test_messages)
-            print(f"Async response: {async_response.content}")
+        # Test async
+        print("Testing async completion...")
+        async_response = await client.async_chat_completion(test_messages)
+        print(f"Async response: {async_response.content}")
 
-        except Exception as e:
-            print(f"Test failed: {e}")
-
-    asyncio.run(test_azure_client())
+    asyncio.run(test_client())

@@ -16,6 +16,7 @@ class ContractAsmd(SQLModel, table=True):
 
     # Core contract identifiers
     document_title: str = Field(max_length=500, index=True, description="Contract document title/filename")
+    contract_type: Optional[str] = Field(default=None, max_length=100, index=True, description="Contract type (subdirectory name like Affiliate_Agreements, Agency Agreements, etc.)")
 
     # Document metadata
     document_name: Optional[str] = Field(default=None, sa_column=Column(Text), description="Document name from contract")
@@ -27,24 +28,24 @@ class ContractAsmd(SQLModel, table=True):
 
     # Key dates
     agreement_date: Optional[str] = Field(default=None, sa_column=Column(Text), description="Agreement date (raw)")
-    agreement_date_answer: Optional[str] = Field(default=None, max_length=50, description="Processed agreement date")
+    agreement_date_answer: Optional[str] = Field(default=None, sa_column=Column(Text), description="Processed agreement date")
 
     effective_date: Optional[str] = Field(default=None, sa_column=Column(Text), description="Effective date (raw)")
-    effective_date_answer: Optional[str] = Field(default=None, max_length=50, description="Processed effective date")
+    effective_date_answer: Optional[str] = Field(default=None, sa_column=Column(Text), description="Processed effective date")
 
     expiration_date: Optional[str] = Field(default=None, sa_column=Column(Text), description="Expiration date (raw)")
-    expiration_date_answer: Optional[str] = Field(default=None, max_length=50, description="Processed expiration date")
+    expiration_date_answer: Optional[str] = Field(default=None, sa_column=Column(Text), description="Processed expiration date")
 
     # Renewal terms
     renewal_term: Optional[str] = Field(default=None, sa_column=Column(Text), description="Renewal term (raw)")
-    renewal_term_answer: Optional[str] = Field(default=None, max_length=200, description="Processed renewal term")
+    renewal_term_answer: Optional[str] = Field(default=None, sa_column=Column(Text), description="Processed renewal term")
 
     notice_period_to_terminate_renewal: Optional[str] = Field(default=None, sa_column=Column(Text), description="Notice period (raw)")
-    notice_period_to_terminate_renewal_answer: Optional[str] = Field(default=None, max_length=200, description="Processed notice period")
+    notice_period_to_terminate_renewal_answer: Optional[str] = Field(default=None, sa_column=Column(Text), description="Processed notice period")
 
     # Legal
     governing_law: Optional[str] = Field(default=None, sa_column=Column(Text), description="Governing law (raw)")
-    governing_law_answer: Optional[str] = Field(default=None, max_length=100, description="Processed governing law")
+    governing_law_answer: Optional[str] = Field(default=None, sa_column=Column(Text), description="Processed governing law")
 
     # Contract clauses (Boolean indicators with raw text)
     most_favored_nation: Optional[str] = Field(default=None, sa_column=Column(Text), description="Most favored nation clause (raw)")
@@ -106,6 +107,24 @@ class ContractAsmd(SQLModel, table=True):
 
     non_transferable_license: Optional[str] = Field(default=None, sa_column=Column(Text), description="Non-transferable license (raw)")
     non_transferable_license_answer: Optional[str] = Field(default=None, max_length=10, description="Non-transferable license answer")
+
+    affiliate_license_licensor: Optional[str] = Field(default=None, sa_column=Column(Text), description="Affiliate license - licensor (raw)")
+    affiliate_license_licensor_answer: Optional[str] = Field(default=None, max_length=10, description="Affiliate license licensor answer")
+
+    affiliate_license_licensee: Optional[str] = Field(default=None, sa_column=Column(Text), description="Affiliate license - licensee (raw)")
+    affiliate_license_licensee_answer: Optional[str] = Field(default=None, max_length=10, description="Affiliate license licensee answer")
+
+    unlimited_all_you_can_eat_license: Optional[str] = Field(default=None, sa_column=Column(Text), description="Unlimited/all-you-can-eat license (raw)")
+    unlimited_all_you_can_eat_license_answer: Optional[str] = Field(default=None, max_length=10, description="Unlimited license answer")
+
+    irrevocable_or_perpetual_license: Optional[str] = Field(default=None, sa_column=Column(Text), description="Irrevocable or perpetual license (raw)")
+    irrevocable_or_perpetual_license_answer: Optional[str] = Field(default=None, max_length=10, description="Irrevocable/perpetual license answer")
+
+    source_code_escrow: Optional[str] = Field(default=None, sa_column=Column(Text), description="Source code escrow (raw)")
+    source_code_escrow_answer: Optional[str] = Field(default=None, max_length=10, description="Source code escrow answer")
+
+    post_termination_services: Optional[str] = Field(default=None, sa_column=Column(Text), description="Post-termination services (raw)")
+    post_termination_services_answer: Optional[str] = Field(default=None, max_length=10, description="Post-termination services answer")
 
     # Liability and warranty
     uncapped_liability: Optional[str] = Field(default=None, sa_column=Column(Text), description="Uncapped liability (raw)")
