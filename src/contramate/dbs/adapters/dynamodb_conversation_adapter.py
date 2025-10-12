@@ -17,9 +17,9 @@ from typing import Any, Dict, List, Optional
 
 import aioboto3
 
-from contramate.utils.settings.core import settings
-from contramate.dbs.models.conversation import FeedbackType
 from contramate.dbs.interfaces.conversation_store import AbstractConversationRepository
+from contramate.dbs.models import FeedbackType
+from contramate.utils.settings.core import DynamoDBSettings
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +29,17 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
     Service for managing conversations and messages in DynamoDB.
     """
 
-    def __init__(self, table_name: str, region_name: Optional[str] = None) -> None:
+    def __init__(self, table_name: str, dynamodb_settings: DynamoDBSettings) -> None:
         self.table_name: str = table_name
-        self.region_name: str = region_name or settings.dynamodb.region
+        self.dynamodb_settings: DynamoDBSettings = dynamodb_settings
 
     @property
     def session(self) -> Any:
-        return aioboto3.Session()
+        return aioboto3.Session(
+            aws_access_key_id=self.dynamodb_settings.access_key_id,
+            aws_secret_access_key=self.dynamodb_settings.secret_access_key,
+            region_name=self.dynamodb_settings.region
+        )
 
     def _sort_items(
         self, items: List[Dict[str, Any]], key: str = "updatedAt", reverse: bool = True
@@ -68,10 +72,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"Creating New conversation for user {user_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             await table.put_item(Item=conversation)
@@ -102,10 +106,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
             query_params["ExclusiveStartKey"] = last_evaluated_key
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.query(**query_params)
@@ -119,10 +123,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"Deleting conversation {conversation_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             await table.delete_item(
@@ -139,10 +143,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"get_message_items_for_conversation for {conversation_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.query(
@@ -163,10 +167,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
             return
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             for item in items:
@@ -215,10 +219,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"create_message {conversation_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             await table.put_item(Item=message)
@@ -237,10 +241,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"get_messages for {conversation_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.query(
@@ -260,10 +264,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"get_conversation_by_id {conversation_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.get_item(
@@ -296,10 +300,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
             query_params["ExclusiveStartKey"] = last_evaluated_key
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.query(**query_params)
@@ -323,10 +327,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"update_message_feedback {user_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.update_item(
@@ -352,10 +356,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"update_conversation_title {conversation_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.update_item(
@@ -384,10 +388,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"update_conversation_filter {conversation_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.update_item(
@@ -411,10 +415,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"touch_conversation Update updatedAt for {conversation_id}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             response: Dict[str, Any] = await table.update_item(
@@ -442,10 +446,10 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         logger.info(f"update_conversation_status for {conversation_id} to {is_active}")
         async with self.session.resource(
             "dynamodb", 
-            region_name=self.region_name,
-            endpoint_url=settings.dynamodb.endpoint_url,
-            aws_access_key_id=settings.dynamodb.access_key_id,
-            aws_secret_access_key=settings.dynamodb.secret_access_key
+            region_name=self.dynamodb_settings.region,
+            endpoint_url=self.dynamodb_settings.endpoint_url,
+            
+            
         ) as dynamodb:
             table = await dynamodb.Table(self.table_name)
             await table.update_item(

@@ -13,6 +13,12 @@ COPY pyproject.toml uv.lock README.md ./
 # Copy the application code
 COPY src ./src
 
+ENV HTTP_PROXY=http://eu-chst-proxy.EU.novartis.net:2010
+ENV HTTPS_PROXY=http://eu-chst-proxy.EU.novartis.net:2010
+ENV no_proxy=openai.azure.com,search.windows.net,documents.azure.com,dev.azure.com,blob.core.windows.net
+ENV NO_PROXY=openai.azure.com,search.windows.net,documents.azure.com,dev.azure.com,blob.core.windows.net
+
+
 # Install the package and its dependencies
 RUN uv sync --frozen --no-cache
 

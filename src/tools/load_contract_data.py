@@ -18,7 +18,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from contramate.dbs.models.contract import ContractAsmd
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.factory import settings_factory
 
 app = typer.Typer(help="Load contract data into PostgreSQL")
 console = Console()
@@ -252,7 +252,8 @@ def load(
         raise typer.Exit(1)
 
     # Create database engine
-    connection_string = settings.postgres.connection_string
+    postgres_settings = settings_factory.create_postgres_settings()
+    connection_string = postgres_settings.connection_string
     engine = create_engine(connection_string, echo=False)
 
     # Create tables if they don't exist
@@ -366,7 +367,8 @@ def verify(
 ):
     """Verify loaded data in the database"""
 
-    connection_string = settings.postgres.connection_string
+    postgres_settings = settings_factory.create_postgres_settings()
+    connection_string = postgres_settings.connection_string
     engine = create_engine(connection_string, echo=False)
 
     with Session(engine) as session:

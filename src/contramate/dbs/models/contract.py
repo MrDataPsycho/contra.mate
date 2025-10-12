@@ -1,8 +1,9 @@
 """Contract models for CUAD dataset"""
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from sqlmodel import SQLModel, Field, Column, Text
+from sqlalchemy import JSON
 
 
 class ContractAsmd(SQLModel, table=True):
