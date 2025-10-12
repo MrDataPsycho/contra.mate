@@ -158,7 +158,7 @@ class ContractAsmd(SQLModel, table=True):
 
     class Config:
         """SQLModel configuration"""
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "project_id": "cuad_v1",
                 "reference_doc_id": "doc_001",
@@ -172,3 +172,134 @@ class ContractAsmd(SQLModel, table=True):
                 "updated_at": "2024-01-15T10:30:00Z"
             }
         }
+
+
+class ContractEsmd(SQLModel, table=True):
+    __tablename__ = "contracting_esmd"
+
+    project_id: str = Field(primary_key=True)
+    doc_id: str = Field(primary_key=True)
+    file_name: str = Field(
+    description="Name of the file containing contract details"
+    )
+    contract_type: Optional[str] = Field(
+    default=None,
+    description="Classifies contract type or marks as 'Others'.",
+    )
+    doc_type: Optional[str] = Field(
+    default=None,
+    description="Identifies Contract as Original, Amendment, or Unknown.",
+    )
+    doc_description: Optional[str] = Field(
+    default=None, description="Brief summary the document’s intent."
+    )
+    scope: Optional[str] = Field(
+    default=None, description="Description of services or work covered."
+    )
+    signatures: Optional[str] = Field(
+    default=None,
+    description="Extract of signatories, roles, and timestamps.",
+    )
+    deliverables_activities: Optional[str] = Field(
+    default=None,
+    description="Deliverables and activities - List of agreed outputs or tasks.",
+    )
+    milestones: Optional[str] = Field(
+    default=None, description="Key project checkpoints."
+    )
+    reward_recourse_terms: Optional[str] = Field(
+    default=None, description="Capture of reward and penalty terms."
+    )
+    inflation_terms: Optional[str] = Field(
+    default=None, description="Description of inflation handling."
+    )
+    payment_schedule: Optional[str] = Field(
+    default=None, description="Outline of payment timing and frequency."
+    )
+    cost_drivers: Optional[str] = Field(
+    default=None, description="Identification of cost-influencing factors"
+    )
+    total_contract_value: Optional[str] = Field(
+    default=None, description="Extract of total financial commitment."
+    )
+    total_pass_through: Optional[str] = Field(
+    default=None, description="Capture of pass-through costs."
+    )
+    total_direct_fees: Optional[str] = Field(
+    default=None,
+    description="Extract of direct project fees.",
+    )
+    annualized_cost: Optional[str] = Field(
+    default=None, description="Provision of yearly cost estimate."
+    )
+    subcontractors: Optional[str] = Field(
+    default=None, description="List of subcontractors mentioned"
+    )
+    discounts: Optional[str] = Field(
+    default=None, description="Identification of cost reductions."
+    )
+    penalty: Optional[str] = Field(
+    default=None, description="Extract of financial penalties."
+    )
+    service_location: Optional[str] = Field(
+    default=None,
+    description="Identification of service delivery location.",
+    )
+    termination_clauses: Optional[str] = Field(
+    default=None, description="Capture of termination conditions."
+    )
+    confidentiality_clauses: Optional[str] = Field(
+    default=None,
+    description="Extract of confidentiality provisions.",
+    )
+    termination_notice: Optional[str] = Field(
+    default=None, description="Description of termination notice terms."
+    )
+    rate_card: Optional[List] = Field(
+    sa_column=Column(JSON),
+    description="Reference or extract of pricing guide.",
+    ) # Use SQLAlchemy JSON column for `list` storage description="List of rates for services or consultant profiles")
+    rebate_structure: Optional[str] = Field(
+    default=None, description="Capture of rebate conditions."
+    )
+    discount_structure: Optional[List] = Field(
+    sa_column=Column(JSON), description="Detail discount types and terms."
+    )
+    pricing_structure: Optional[str] = Field(
+    default=None, description="Explanation of pricing calculation method."
+    )
+    review_periods: Optional[str] = Field(
+    default=None,
+    description="Identification of contract review intervals.",
+    )
+    amendment_procedures: Optional[str] = Field(
+    default=None, description="Description of change process."
+    )
+    reason_for_amendment: Optional[str] = Field(
+    default=None,
+    description="Classifies reason for amendment.",
+    )
+    changes_made: Optional[str] = Field(
+    default=None,
+    description="List of specific changes.",
+    )
+    impact_on_original: Optional[str] = Field(
+    default=None, description="Description of effect on original terms."
+    )
+    relevant_sop: Optional[str] = Field(
+    default=None,
+    description="Identifies selected SOP or mark as N/A.",
+    )
+    monthly_cost: Optional[str] = Field(
+    default=None, description="Extract of recurring monthly expense."
+    )
+    other_charges: Optional[str] = Field(
+    default=None, description="Capture of additional costs."
+    )
+    amendment_num: Optional[str] = Field(
+    default=None,
+    description="Extract of amendment number or marks as N/A if not relevant.",
+    )
+    processed_at: Optional[datetime] = Field(
+    default=None, description="Processed timestamp"
+    )

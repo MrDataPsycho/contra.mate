@@ -6,14 +6,24 @@ This package contains:
 - models: Data models and types
 """
 
-# Import from adapters package
-from contramate.dbs.adapters import DynamoDBConversationAdapter
+# Only import models by default to avoid triggering settings initialization
+# Adapters should be imported explicitly when needed:
+#   from contramate.dbs.adapters import DynamoDBConversationAdapter
 
-# Import from models package
-from contramate.dbs.models import FeedbackType, ContractAsmd
+from contramate.dbs.models import (
+    FeedbackType,
+    ContractAsmd,
+    ProcessingStatus,
+    DocumentConversionStatus,
+    DocumentChunkingStatus,
+    DocumentIndexingStatus,
+)
 
 __all__ = [
-    "DynamoDBConversationAdapter",
     "FeedbackType",
     "ContractAsmd",
+    "ProcessingStatus",
+    "DocumentConversionStatus",
+    "DocumentChunkingStatus",
+    "DocumentIndexingStatus",
 ]

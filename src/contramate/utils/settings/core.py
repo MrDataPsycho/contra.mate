@@ -107,38 +107,10 @@ class AppSettings(ABCBaseSettings):
     model_config["env_prefix"] = "APP_"
 
 
-
-
-class Settings:
-    """Central settings class that aggregates all configuration groups"""
-
-    def __init__(self):
-        self.postgres = PostgresSettings()
-        self.dynamodb = DynamoDBSettings()
-        self.opensearch = OpenSearchSettings()
-        self.openai = OpenAISettings()
-        self.azure_openai = AOAICertSettings()
-        self.app = AppSettings()
-
-    def reload(self):
-        """Reload all settings from environment"""
-        self.postgres = PostgresSettings()
-        self.dynamodb = DynamoDBSettings()
-        self.opensearch = OpenSearchSettings()
-        self.openai = OpenAISettings()
-        self.azure_openai = AOAICertSettings()
-        self.app = AppSettings()
-
-
 # Global settings instance
-settings = Settings()
+
 
 
 if __name__ == "__main__":
     from loguru import logger
-    logger.info("Loading application settings...")
-    logger.info(f"App: {settings.app.app_name} ({settings.app.environment})")
-    logger.info(f"PostgreSQL: {settings.postgres.host}:{settings.postgres.port}/{settings.postgres.database}")
-    logger.info(f"DynamoDB: {settings.dynamodb.endpoint_url}")
-    logger.info(f"OpenSearch: {settings.opensearch.endpoint_url}")
-    logger.info(f"OpenAI Model: {settings.openai.model}")
+    logger.info("setting")

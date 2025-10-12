@@ -1,5 +1,17 @@
 """Services package for business logic"""
 
-# Service imports will be added here as they are created
+from contramate.services.markdown_chunking_service import (
+    DocumentInfo,
+    Chunk,
+    ChunkedDocument,
+    MarkdownChunkingService,
+    EncodingName,
+)
 
-__all__ = []
+__all__ = [
+    "DocumentInfo",
+    "Chunk",
+    "ChunkedDocument",
+    "MarkdownChunkingService",
+    "EncodingName",
+]
