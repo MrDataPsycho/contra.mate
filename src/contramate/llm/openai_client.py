@@ -3,7 +3,8 @@ import logging
 from openai import OpenAI, AsyncOpenAI
 from openai import OpenAIError
 
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.core import OpenAISettings
+from contramate.utils.settings.factory import settings_factory
 from contramate.llm.base import BaseChatClient, ChatMessage, ChatResponse
 
 logger = logging.getLogger(__name__)
@@ -12,18 +13,27 @@ logger = logging.getLogger(__name__)
 class OpenAIChatClient(BaseChatClient):
     """OpenAI chat completion client with sync and async support"""
 
-    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        openai_settings: Optional[OpenAISettings] = None
+    ):
         """
         Initialize OpenAI client
 
         Args:
             api_key: OpenAI API key (uses settings if not provided)
             model: Default model to use (uses settings if not provided)
+            openai_settings: OpenAI settings object (creates from factory if not provided)
         """
-        super().__init__(api_key=api_key or settings.openai.api_key)
-        self.default_model = model or settings.openai.model
-        self.default_temperature = settings.openai.temperature
-        self.default_max_tokens = settings.openai.max_tokens
+        # Get settings from factory if not provided
+        settings = openai_settings or settings_factory.create_openai_settings()
+
+        super().__init__(api_key=api_key or settings.api_key)
+        self.default_model = model or settings.model
+        self.default_temperature = settings.temperature
+        self.default_max_tokens = settings.max_tokens
 
         # Validate required configuration
         if not self.api_key:

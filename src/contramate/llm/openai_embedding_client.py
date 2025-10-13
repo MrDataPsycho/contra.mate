@@ -3,7 +3,8 @@ import logging
 from openai import OpenAI, AsyncOpenAI
 from openai import OpenAIError
 
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.core import OpenAISettings
+from contramate.utils.settings.factory import settings_factory
 from contramate.llm.base import BaseEmbeddingClient, EmbeddingResponse
 
 logger = logging.getLogger(__name__)
@@ -12,16 +13,23 @@ logger = logging.getLogger(__name__)
 class OpenAIEmbeddingClient(BaseEmbeddingClient):
     """OpenAI embedding client with sync and async support"""
 
-    def __init__(self, api_key: Optional[str] = None, embedding_model: Optional[str] = None):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        embedding_model: Optional[str] = None,
+        openai_settings: Optional[OpenAISettings] = None
+    ):
         """
         Initialize OpenAI embedding client
 
         Args:
             api_key: OpenAI API key (uses settings if not provided)
             embedding_model: Default embedding model to use (uses settings if not provided)
+            openai_settings: OpenAI settings object (creates from factory if not provided)
         """
-        super().__init__(api_key=api_key or settings.openai.api_key)
-        self.default_embedding_model = embedding_model or settings.openai.embedding_model
+        settings = openai_settings or settings_factory.create_openai_settings()
+        super().__init__(api_key=api_key or settings.api_key)
+        self.default_embedding_model = embedding_model or settings.embedding_model
 
         # Validate required configuration
         if not self.api_key:

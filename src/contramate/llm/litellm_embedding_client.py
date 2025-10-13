@@ -4,7 +4,7 @@ import asyncio
 import litellm
 from litellm import AuthenticationError, RateLimitError, APIConnectionError, APIError
 
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.factory import settings_factory
 from contramate.utils.auth.certificate_provider import get_cert_token_provider
 from contramate.llm.base import BaseEmbeddingClient, EmbeddingResponse
 
@@ -44,7 +44,8 @@ class LiteLLMEmbeddingClient(BaseEmbeddingClient):
         
         if use_azure:
             # Azure requires certificate-based authentication only
-            self.azure_settings = azure_settings or settings.azure_openai
+            azure_openai_settings = settings_factory.create_azure_openai_settings()
+            self.azure_settings = azure_settings or azure_openai_settings
             
             # Use direct parameters if provided, otherwise fall back to settings
             self.token_provider = token_provider or get_cert_token_provider(self.azure_settings)
@@ -62,8 +63,9 @@ class LiteLLMEmbeddingClient(BaseEmbeddingClient):
                 raise ValueError("Azure endpoint is required for Azure OpenAI.")
         else:
             # Standard OpenAI configuration
-            self.api_key = api_key or settings.openai.api_key
-            self.default_embedding_model = embedding_model or settings.openai.embedding_model
+            openai_settings = settings_factory.create_openai_settings()
+            self.api_key = api_key or openai_settings.api_key
+            self.default_embedding_model = embedding_model or openai_settings.embedding_model
             
             # Validate OpenAI configuration
             if not self.api_key:
@@ -383,12 +385,13 @@ if __name__ == "__main__":
         try:
             print("Testing with direct certificate parameters...")
             
+            azure_openai_settings = settings_factory.create_azure_openai_settings()
             direct_client = LiteLLMEmbeddingClient(
                 use_azure=True,
-                token_provider=get_cert_token_provider(settings.azure_openai),
-                azure_endpoint=settings.azure_openai.azure_endpoint,
-                api_version=settings.azure_openai.api_version,
-                embedding_model=settings.azure_openai.embedding_model
+                token_provider=get_cert_token_provider(azure_openai_settings),
+                azure_endpoint=azure_openai_settings.azure_endpoint,
+                api_version=azure_openai_settings.api_version,
+                embedding_model=azure_openai_settings.embedding_model
             )
             
             print(f"✅ Direct parameters client initialized successfully")

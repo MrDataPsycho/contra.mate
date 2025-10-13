@@ -3,7 +3,7 @@
 from typing import Optional, Literal
 import logging
 
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.factory import settings_factory
 from contramate.llm.base import BaseChatClient, BaseEmbeddingClient
 from contramate.llm.litellm_client import LiteLLMChatClient
 from contramate.llm.litellm_embedding_client import LiteLLMEmbeddingClient
@@ -62,17 +62,20 @@ class LLMClientFactory:
 
         # Initialize appropriate settings based on client type
         if client_type == "litellm":
-            api_key = settings.openai.api_key
-            model = settings.openai.model
-            embedding_model = settings.openai.embedding_model
+            openai_settings = settings_factory.create_openai_settings()
+            api_key = openai_settings.api_key
+            model = openai_settings.model
+            embedding_model = openai_settings.embedding_model
         elif client_type == "openai":
-            api_key = settings.openai.api_key
-            model = settings.openai.model
-            embedding_model = settings.openai.embedding_model
+            openai_settings = settings_factory.create_openai_settings()
+            api_key = openai_settings.api_key
+            model = openai_settings.model
+            embedding_model = openai_settings.embedding_model
         else:  # azure_openai
+            azure_settings = settings_factory.create_azure_openai_settings()
             api_key = None  # Azure uses certificate-based auth
-            model = settings.azure_openai.model
-            embedding_model = settings.azure_openai.embedding_model
+            model = azure_settings.model
+            embedding_model = azure_settings.embedding_model
 
         return cls(
             default_client_type=client_type,

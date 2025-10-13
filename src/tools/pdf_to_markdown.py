@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import pymupdf
 import pymupdf4llm
 import typer
 from rich.console import Console
@@ -27,7 +28,7 @@ from contramate.dbs.models.document_status import (
     DocumentConversionStatus,
     ProcessingStatus,
 )
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.factory import settings_factory
 
 app = typer.Typer(help="Convert contract PDFs to markdown")
 console = Console()
@@ -60,16 +61,44 @@ def find_file_in_bronze(project_id: str, reference_doc_id: str) -> Optional[Path
 
 
 def convert_pdf_to_markdown(pdf_path: Path) -> str:
-    """Convert PDF to markdown using pymupdf4llm
+    """Convert PDF to markdown using pymupdf4llm with fallback to plain PyMuPDF
 
     Args:
         pdf_path: Path to PDF file
 
     Returns:
         Markdown content as string
+
+    Raises:
+        RuntimeError: If both pymupdf4llm and fallback extraction fail
     """
-    # Use pymupdf4llm to convert PDF to markdown
+    # Try pymupdf4llm first
     markdown_text = pymupdf4llm.to_markdown(str(pdf_path))
+
+    # If pymupdf4llm produces empty output, fallback to plain PyMuPDF extraction
+    if not markdown_text or len(markdown_text.strip()) == 0:
+        console.print(f"[yellow]⚠ pymupdf4llm produced empty output, using PyMuPDF fallback[/yellow]")
+
+        try:
+            doc = pymupdf.open(pdf_path)
+            markdown_text = ""
+
+            for page_num, page in enumerate(doc, 1):
+                # Extract text from page
+                text = page.get_text()
+
+                # Add page separator and content
+                if text.strip():
+                    markdown_text += f"\n\n---\n\n# Page {page_num}\n\n{text}\n"
+
+            doc.close()
+
+            if not markdown_text or len(markdown_text.strip()) == 0:
+                raise RuntimeError("Both pymupdf4llm and PyMuPDF fallback produced empty output")
+
+        except Exception as e:
+            raise RuntimeError(f"Fallback extraction failed: {str(e)}")
+
     return markdown_text
 
 
@@ -122,7 +151,8 @@ def convert(
     """Convert PDFs to markdown with status tracking"""
 
     # Create database connection
-    connection_string = settings.postgres.connection_string
+    postgres_settings = settings_factory.create_postgres_settings()
+    connection_string = postgres_settings.connection_string
     engine = create_engine(connection_string, echo=False)
 
     # Statistics
@@ -274,7 +304,8 @@ def verify(
 ):
     """Verify conversion status and show sample markdown files"""
 
-    connection_string = settings.postgres.connection_string
+    postgres_settings = settings_factory.create_postgres_settings()
+    connection_string = postgres_settings.connection_string
     engine = create_engine(connection_string, echo=False)
 
     with Session(engine) as session:

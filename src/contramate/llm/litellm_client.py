@@ -4,7 +4,8 @@ import asyncio
 import litellm
 from litellm import AuthenticationError, RateLimitError, APIConnectionError, APIError
 
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.core import OpenAISettings, AOAICertSettings
+from contramate.utils.settings.factory import settings_factory
 from contramate.utils.auth.certificate_provider import get_cert_token_provider
 from contramate.llm.base import BaseChatClient, ChatMessage, ChatResponse
 
@@ -15,11 +16,12 @@ class LiteLLMChatClient(BaseChatClient):
     """LiteLLM chat completion client with sync and async support for OpenAI and Azure OpenAI"""
 
     def __init__(
-        self, 
-        api_key: Optional[str] = None, 
+        self,
+        api_key: Optional[str] = None,
         model: Optional[str] = None,
         use_azure: bool = False,
-        azure_settings: Optional[object] = None,
+        azure_settings: Optional[AOAICertSettings] = None,
+        openai_settings: Optional[OpenAISettings] = None,
         # Direct Azure parameters (certificate-based authentication required)
         token_provider: Optional[callable] = None,
         azure_endpoint: Optional[str] = None,
@@ -32,43 +34,45 @@ class LiteLLMChatClient(BaseChatClient):
             api_key: API key (uses settings if not provided)
             model: Default model to use (uses settings if not provided)
             use_azure: Whether to use Azure OpenAI (default: False)
-            azure_settings: Azure OpenAI settings (uses global settings if not provided)
+            azure_settings: Azure OpenAI settings object (creates from factory if not provided)
+            openai_settings: OpenAI settings object (creates from factory if not provided)
             token_provider: Certificate-based token provider callable for Azure (required for Azure)
             azure_endpoint: Azure endpoint URL (required for Azure)
             api_version: API version (optional for Azure)
         """
         # Initialize base client
         super().__init__(api_key=api_key)
-        
+
         self.use_azure = use_azure
-        
+
         if use_azure:
             # Azure requires certificate-based authentication only
-            self.azure_settings = azure_settings or settings.azure_openai
-            
+            self.azure_settings = azure_settings or settings_factory.create_azure_openai_settings()
+
             # Use direct parameters if provided, otherwise fall back to settings
             self.token_provider = token_provider or get_cert_token_provider(self.azure_settings)
             self.azure_endpoint = azure_endpoint or self.azure_settings.azure_endpoint
             self.api_version = api_version or self.azure_settings.api_version
-            
+
             # For model, temperature, and max_tokens, use settings as fallback
             self.default_model = model or self.azure_settings.model
             self.default_temperature = self.azure_settings.temperature
             self.default_max_tokens = self.azure_settings.max_tokens
-            
+
             # Validate required Azure parameters
             if not self.token_provider:
                 raise ValueError("Certificate-based token provider is required for Azure OpenAI.")
-            
+
             if not self.azure_endpoint:
                 raise ValueError("Azure endpoint is required for Azure OpenAI.")
         else:
             # Standard OpenAI configuration
-            self.api_key = api_key or settings.openai.api_key
-            self.default_model = model or settings.openai.model
-            self.default_temperature = settings.openai.temperature
-            self.default_max_tokens = settings.openai.max_tokens
-            
+            _openai_settings = openai_settings or settings_factory.create_openai_settings()
+            self.api_key = api_key or _openai_settings.api_key
+            self.default_model = model or _openai_settings.model
+            self.default_temperature = _openai_settings.temperature
+            self.default_max_tokens = _openai_settings.max_tokens
+
             # Validate OpenAI configuration
             if not self.api_key:
                 raise ValueError("API key is required for LiteLLM. Set OPENAI_API_KEY in environment or pass api_key parameter.")

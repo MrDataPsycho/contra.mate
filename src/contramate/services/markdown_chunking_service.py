@@ -1,101 +1,18 @@
 import re
+import unicodedata
 from enum import StrEnum
 from loguru import logger
 import tiktoken
 from typing import List, Dict, Tuple
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
-from pydantic import BaseModel, Field
 from neopipe import Result, Ok, Err
+
+from contramate.models import DocumentInfo, Chunk, ChunkedDocument
 
 
 class EncodingName(StrEnum):
     """Enum for encoding names used by tiktoken."""
     DEFAULT = "o200k_base"
     O200K_BASE = "o200k_base"
-
-
-@dataclass
-class DocumentInfo:
-    """Document information for chunking context."""
-    project_id: str
-    reference_doc_id: str
-    contract_type: str
-
-
-class Chunk(BaseModel):
-    """Individual chunk with content and metadata."""
-    content: str = Field(..., description="The chunk text content (no header table)")
-    chunk_index: int = Field(..., description="Zero-based index of this chunk")
-    section_hierarchy: List[str] = Field(default_factory=list, description="Section hierarchy for context")
-    char_start: int = Field(..., description="Character start position in original document")
-    char_end: int = Field(..., description="Character end position in original document")
-    token_count: int = Field(..., description="Number of tokens in this chunk")
-    has_tables: bool = Field(default=False, description="Whether chunk contains tables")
-
-
-class ChunkedDocument(BaseModel):
-    """Complete document with file-level metadata and all chunks."""
-    # File-level metadata
-    project_id: str = Field(..., description="Project identifier")
-    reference_doc_id: str = Field(..., description="Reference document identifier")
-    contract_type: str = Field(..., description="Type of contract")
-    total_chunks: int = Field(..., description="Total number of chunks in document")
-    original_markdown_length: int = Field(..., description="Length of original markdown in characters")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Creation timestamp")
-
-    # Chunks
-    chunks: List[Chunk] = Field(default_factory=list, description="List of document chunks")
-
-    def save_json(self, file_path: str | Path) -> None:
-        """Save chunked document to JSON file.
-
-        Args:
-            file_path: Path where JSON file will be saved
-        """
-        path = Path(file_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(self.model_dump_json(indent=2))
-
-        logger.info(f"Saved chunked document to {path} ({self.total_chunks} chunks)")
-
-    @classmethod
-    def load_json(cls, file_path: str | Path) -> "ChunkedDocument":
-        """Load chunked document from JSON file.
-
-        Args:
-            file_path: Path to JSON file
-
-        Returns:
-            ChunkedDocument instance
-        """
-        path = Path(file_path)
-
-        if not path.exists():
-            raise FileNotFoundError(f"Chunked document file not found: {path}")
-
-        with open(path, 'r', encoding='utf-8') as f:
-            data = f.read()
-
-        doc = cls.model_validate_json(data)
-        logger.info(f"Loaded chunked document from {path} ({doc.total_chunks} chunks)")
-
-        return doc
-
-
-@dataclass
-class ChunkMetadata:
-    """Metadata for each chunk (deprecated - use Chunk class instead)."""
-    chunk_index: int
-    total_chunks: int  # Will be set after all chunks are created
-    section_hierarchy: List[str]
-    char_start: int
-    char_end: int
-    token_count: int
-    has_tables: bool
 
 
 class MarkdownChunkingService:
@@ -137,7 +54,6 @@ class MarkdownChunkingService:
         """
         IMPROVEMENT #10: Normalize unicode and special characters.
         """
-        import unicodedata
         # Normalize unicode to NFC form
         text = unicodedata.normalize('NFC', text)
         # Remove zero-width characters
@@ -390,8 +306,8 @@ class MarkdownChunkingService:
             
             def decode(tokens: List[int]) -> str:
                 return self.encoding.decode(tokens)
-            
-            chunks: List[Tuple[str, ChunkMetadata]] = []
+
+            chunks: List[Chunk] = []
             char_position = 0
             
             # Case A: Single section - split by token limit
@@ -412,20 +328,19 @@ class MarkdownChunkingService:
                         continue
 
                     chunk_text = decode(token_slice).strip()
-                    chunk_content = chunk_text
-                    
-                    # IMPROVEMENT #5: Create metadata
-                    metadata = ChunkMetadata(
-                        chunk_index=len(chunks),
-                        total_chunks=0,  # Will update later
+
+                    # IMPROVEMENT #5: Create Chunk object directly
+                    chunk_obj = Chunk(
+                        content=chunk_text,
+                        chunk_index=0,
                         section_hierarchy=[sections[0].get("header", "Document")],
                         char_start=char_position,
                         char_end=char_position + len(chunk_text),
                         token_count=len(token_slice),
                         has_tables=sections[0].get("has_table", False)
                     )
-                    
-                    chunks.append((chunk_content, metadata))
+
+                    chunks.append(chunk_obj)
                     char_position += len(chunk_text)
             
             # Case B: Multiple sections - greedy packing
@@ -457,19 +372,18 @@ class MarkdownChunkingService:
                         # Flush current chunk first
                         if current_chunk_parts:
                             chunk_body = "\n\n".join(current_chunk_parts).strip()
-                            chunk_content = chunk_body
-                            
-                            metadata = ChunkMetadata(
-                                chunk_index=len(chunks),
-                                total_chunks=0,
+
+                            chunk_obj = Chunk(
+                                content=chunk_body,
+                                chunk_index=0,
                                 section_hierarchy=current_hierarchy.copy(),
                                 char_start=chunk_start_pos,
                                 char_end=chunk_start_pos + len(chunk_body),
                                 token_count=current_chunk_tokens,
                                 has_tables=has_tables_in_chunk
                             )
-                            
-                            chunks.append((chunk_content, metadata))
+
+                            chunks.append(chunk_obj)
                             current_chunk_parts = []
                             current_chunk_tokens = 0
                             chunk_start_pos += len(chunk_body)
@@ -481,18 +395,18 @@ class MarkdownChunkingService:
                             table_chunks = self.split_large_table(section_content, effective_limit)
                             for table_chunk in table_chunks:
                                 chunk_content = hierarchy_context + table_chunk
-                                
-                                metadata = ChunkMetadata(
-                                    chunk_index=len(chunks),
-                                    total_chunks=0,
+
+                                chunk_obj = Chunk(
+                                    content=chunk_content,
+                                    chunk_index=0,
                                     section_hierarchy=current_hierarchy.copy(),
                                     char_start=chunk_start_pos,
                                     char_end=chunk_start_pos + len(table_chunk),
                                     token_count=len(encode(table_chunk)),
                                     has_tables=True
                                 )
-                                
-                                chunks.append((chunk_content, metadata))
+
+                                chunks.append(chunk_obj)
                                 chunk_start_pos += len(table_chunk)
                         else:
                             # Regular token-based splitting
@@ -500,18 +414,18 @@ class MarkdownChunkingService:
                                 token_slice = section_tokens_list[j:j + effective_limit]
                                 chunk_text = decode(token_slice).strip()
                                 chunk_content = hierarchy_context + chunk_text
-                                
-                                metadata = ChunkMetadata(
-                                    chunk_index=len(chunks),
-                                    total_chunks=0,
+
+                                chunk_obj = Chunk(
+                                    content=chunk_content,
+                                    chunk_index=0,
                                     section_hierarchy=current_hierarchy.copy(),
                                     char_start=chunk_start_pos,
                                     char_end=chunk_start_pos + len(chunk_text),
                                     token_count=len(token_slice),
                                     has_tables=False
                                 )
-                                
-                                chunks.append((chunk_content, metadata))
+
+                                chunks.append(chunk_obj)
                                 chunk_start_pos += len(chunk_text)
                         
                         continue
@@ -526,19 +440,18 @@ class MarkdownChunkingService:
                         # Flush current chunk
                         if current_chunk_parts:
                             chunk_body = "\n\n".join(current_chunk_parts).strip()
-                            chunk_content = chunk_body
-                            
-                            metadata = ChunkMetadata(
-                                chunk_index=len(chunks),
-                                total_chunks=0,
+
+                            chunk_obj = Chunk(
+                                content=chunk_body,
+                                chunk_index=0,
                                 section_hierarchy=current_hierarchy.copy(),
                                 char_start=chunk_start_pos,
                                 char_end=chunk_start_pos + len(chunk_body),
                                 token_count=current_chunk_tokens,
                                 has_tables=has_tables_in_chunk
                             )
-                            
-                            chunks.append((chunk_content, metadata))
+
+                            chunks.append(chunk_obj)
                             chunk_start_pos += len(chunk_body)
                         
                         # Start new chunk
@@ -549,63 +462,50 @@ class MarkdownChunkingService:
                 # IMPROVEMENT #7: Flush remaining parts (check minimum size)
                 if current_chunk_parts:
                     chunk_body = "\n\n".join(current_chunk_parts).strip()
-                    
+
                     # If last chunk is too small, merge with previous chunk
                     if current_chunk_tokens < self.min_chunk_size and len(chunks) > 0:
                         logger.info(f"Merging small final chunk ({current_chunk_tokens} tokens) with previous chunk")
-                        prev_chunk, prev_metadata = chunks[-1]
+                        prev_chunk = chunks[-1]
                         # Merge previous chunk with current chunk
-                        merged_body = prev_chunk + "\n\n" + chunk_body
-                        merged_chunk = merged_body
-                        
-                        prev_metadata.char_end = chunk_start_pos + len(chunk_body)
-                        prev_metadata.token_count += current_chunk_tokens
-                        prev_metadata.has_tables = prev_metadata.has_tables or has_tables_in_chunk
-                        
-                        chunks[-1] = (merged_chunk, prev_metadata)
+                        merged_content = prev_chunk.content + "\n\n" + chunk_body
+
+                        # Update previous chunk in place
+                        prev_chunk.content = merged_content
+                        prev_chunk.char_end = chunk_start_pos + len(chunk_body)
+                        prev_chunk.token_count += current_chunk_tokens
+                        prev_chunk.has_tables = prev_chunk.has_tables or has_tables_in_chunk
                     else:
-                        chunk_content = chunk_body
-                        
-                        metadata = ChunkMetadata(
-                            chunk_index=len(chunks),
-                            total_chunks=0,
+                        chunk_obj = Chunk(
+                            content=chunk_body,
+                            chunk_index=0,
                             section_hierarchy=current_hierarchy.copy(),
                             char_start=chunk_start_pos,
                             char_end=chunk_start_pos + len(chunk_body),
                             token_count=current_chunk_tokens,
                             has_tables=has_tables_in_chunk
                         )
-                        
-                        chunks.append((chunk_content, metadata))
+
+                        chunks.append(chunk_obj)
             
-            # Convert tuples to Chunk objects
-            chunk_objects = []
-            for i, (chunk_content, metadata) in enumerate(chunks):
-                chunk_obj = Chunk(
-                    content=chunk_content,
-                    chunk_index=i,
-                    section_hierarchy=metadata.section_hierarchy,
-                    char_start=metadata.char_start,
-                    char_end=metadata.char_end,
-                    token_count=metadata.token_count,
-                    has_tables=metadata.has_tables
-                )
-                chunk_objects.append(chunk_obj)
+            # Update chunk indices and validate
+            for i, chunk_obj in enumerate(chunks, 1):
+                chunk_obj.chunk_index = i
 
                 # Validate chunk
-                if not chunk_content.strip():
+                if not chunk_obj.content.strip():
                     logger.error(f"Empty chunk detected at index {i}")
 
-            logger.info(f"Number of chunks created: {len(chunk_objects)}")
+            logger.info(f"Number of chunks created: {len(chunks)}")
 
             # Create and return ChunkedDocument
             chunked_doc = ChunkedDocument(
                 project_id=self.doc_info.project_id,
                 reference_doc_id=self.doc_info.reference_doc_id,
                 contract_type=self.doc_info.contract_type,
-                total_chunks=len(chunk_objects),
+                total_chunks=len(chunks),
                 original_markdown_length=len(markdown_content),
-                chunks=chunk_objects
+                chunks=chunks
             )
 
             return chunked_doc

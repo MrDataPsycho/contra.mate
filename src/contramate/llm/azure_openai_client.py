@@ -3,7 +3,7 @@ import logging
 from openai import AzureOpenAI, AsyncAzureOpenAI
 from openai import OpenAIError
 
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.factory import settings_factory
 from contramate.utils.auth.certificate_provider import get_cert_token_provider
 from contramate.llm.base import BaseChatClient, ChatMessage, ChatResponse
 

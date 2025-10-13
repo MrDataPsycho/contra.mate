@@ -159,6 +159,72 @@ class DocumentChunkingStatus(SQLModel, table=True):
         }
 
 
+class DocumentMetadataExtractionStatus(SQLModel, table=True):
+    """Track metadata extraction status for each document
+
+    This table tracks the metadata extraction process where contract text
+    is analyzed by LLM to extract structured metadata into contract_esmd table.
+    """
+
+    __tablename__ = "document_metadata_extraction_status"
+
+    # Composite primary key matching contract_asmd
+    project_id: str = Field(
+        primary_key=True,
+        max_length=50,
+        description="Project identifier (matches contract_asmd.project_id)"
+    )
+    reference_doc_id: str = Field(
+        primary_key=True,
+        max_length=100,
+        description="Reference document identifier (matches contract_asmd.reference_doc_id)"
+    )
+
+    # Processing status
+    status: ProcessingStatus = Field(
+        default=ProcessingStatus.READY,
+        index=True,
+        description="Current extraction status: ready, processed, or failed"
+    )
+
+    # Execution tracking
+    execution_time: Optional[float] = Field(
+        default=None,
+        description="Execution time in seconds for the extraction process"
+    )
+
+    # Error tracking
+    error_message: Optional[str] = Field(
+        default=None,
+        max_length=1000,
+        description="Error message if extraction failed"
+    )
+
+    # Metadata
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Record creation timestamp"
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Record last update timestamp"
+    )
+
+    class Config:
+        """SQLModel configuration"""
+        json_schema_extra = {
+            "example": {
+                "project_id": "123e4567-e89b-12d3-a456-426614174000",
+                "reference_doc_id": "98765432-e89b-12d3-a456-426614174999",
+                "status": "ready",
+                "execution_time": None,
+                "error_message": None,
+                "created_at": "2024-01-15T10:30:00Z",
+                "updated_at": "2024-01-15T10:30:00Z"
+            }
+        }
+
+
 class DocumentIndexingStatus(SQLModel, table=True):
     """Track chunks to vector index conversion status for each document
 

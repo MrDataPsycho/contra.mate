@@ -126,3 +126,4 @@ faiss_index/
 credentials.json
 service-account.json
 data
+archive

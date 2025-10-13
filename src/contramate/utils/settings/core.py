@@ -50,13 +50,12 @@ class OpenSearchSettings(ABCBaseSettings):
         return f"{protocol}://{self.host}:{self.port}"
 
     def get_index_name(self) -> str:
-        """Get index name from environment or fallback to catalog default"""
+        """Get index name from environment or fallback to app settings default"""
         if self.index_name:
             return self.index_name
 
-        # Import here to avoid circular import
-        from contramate.dbs.catalog import IndexName
-        return IndexName.default()
+        # Fallback to default
+        return "contracts-test"
 
 
 class OpenAISettings(ABCBaseSettings):
@@ -102,6 +101,8 @@ class AppSettings(ABCBaseSettings):
     debug: bool = Field(default=True, description="Debug mode")
     host: str = Field(default="0.0.0.0", description="Application host")
     port: int = Field(default=8000, description="Application port")
+    vector_dimension: int = Field(default=3072, description="Vector dimension for embeddings (e.g., 3072 for text-embedding-3-large)")
+    default_index_name: str = Field(default="contracts-test", description="Default OpenSearch index name")
 
     model_config = ABCBaseSettings.model_config.copy()
     model_config["env_prefix"] = "APP_"

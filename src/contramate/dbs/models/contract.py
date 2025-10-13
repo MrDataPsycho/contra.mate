@@ -1,6 +1,7 @@
 """Contract models for CUAD dataset"""
 
 from datetime import datetime
+from tkinter import NO
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Column, Text
 from sqlalchemy import JSON
@@ -179,9 +180,13 @@ class ContractEsmd(SQLModel, table=True):
     __tablename__ = "contracting_esmd"
 
     project_id: str = Field(primary_key=True)
-    doc_id: str = Field(primary_key=True)
+    reference_doc_id: str = Field(primary_key=True)
     file_name: str = Field(
     description="Name of the file containing contract details"
+    )
+    title: Optional[str] = Field(
+        default=None, 
+        description="Title of the Agreement extracted from the contract"
     )
     contract_type: Optional[str] = Field(
     default=None,

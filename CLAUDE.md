@@ -38,6 +38,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Do use relative imports in python always use contramate as the root package.
 - When ever possible if the modules are imported to another module first reimport them in the module level __init__.py file and then import from the package. For example: if you want to import `DynamoDBConversationAdapter` from `src/contramate/dbs/adapters/dynamodb_conversation.py` first import it in `src/contramate/dbs/adapters/__init__.py` and then import it from `contramate.dbs. 
 - Do not reimport interfaces import them from root package.
+- Never import inside of a function rather at the root
+- Always use logger from loguru and do not add logger into the class like self.logger = logger rather use the loguru logger from import
 
 ## Terminal Usage Guideline
 - If docker any service is not working, try /bin/zsh -il -c as terminal.
