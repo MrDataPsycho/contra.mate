@@ -4,8 +4,9 @@ Domain models for document processing and vector storage.
 Following DDD (Domain-Driven Design), this package contains:
 - Document entities (Chunk, ChunkedDocument, EnrichedChunk, EnrichedDocument)
 - Value objects (DocumentInfo)
-- Vector models (VectorModel, VectorBatch)
-- Enums (ContentSource)
+- Vector models (VectorModel, GoldModel)
+- Filter models (DocumentFilter, OpenSearchFilter)
+- Enums (ContentSource, DocumentSource)
 """
 
 from contramate.models.document import (
@@ -26,17 +27,21 @@ from contramate.models.gold import (
     GoldModel,
 )
 
+from contramate.models.filters import (
+    DocumentFilter,
+    OpenSearchFilter,
+)
+
 __all__ = [
-    # Document models
     "DocumentInfo",
     "Chunk",
     "ChunkedDocument",
     "EnrichedChunk",
     "EnrichedDocument",
-    # Vector models
     "ContentSource",
     "VectorModel",
-    # Gold models
     "DocumentSource",
     "GoldModel",
+    "DocumentFilter",
+    "OpenSearchFilter",
 ]

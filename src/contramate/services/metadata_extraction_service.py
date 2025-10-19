@@ -12,7 +12,7 @@ from neopipe import Result, Ok, Err
 from loguru import logger
 
 from contramate.llm.base import BaseChatClient
-from contramate.llm.litellm_client import LiteLLMChatClient
+from contramate.llm.factory import create_default_chat_client
 from contramate.utils.settings.factory import settings_factory
 from contramate.core.agents import MetadataParserAgent
 from contramate.dbs.models.contract import ContractEsmd
@@ -169,7 +169,7 @@ class MetadataExtractionServiceFactory:
     @staticmethod
     def create_default() -> MetadataExtractionService:
         """
-        Auto-initialize the client with LiteLLM and create the service class.
+        Auto-initialize the client with OpenAI and create the service class.
 
         Uses configuration from environment variables:
         - OPENAI_API_KEY: OpenAI API key
@@ -186,14 +186,8 @@ class MetadataExtractionServiceFactory:
             ...     reference_doc_id="doc_001"
             ... )
         """
-        # Get OpenAI settings from environment
-        openai_settings = settings_factory.create_openai_settings()
-
-        # Create LiteLLM client with settings
-        client = LiteLLMChatClient(
-            model=openai_settings.model,
-            api_key=openai_settings.api_key
-        )
+        # Create OpenAI client using factory (avoids LiteLLM HTTP calls)
+        client = create_default_chat_client()
 
         # Create and return service with default encoding
         return MetadataExtractionService(

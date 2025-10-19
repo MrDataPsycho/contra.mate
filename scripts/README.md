@@ -204,3 +204,18 @@ chmod +x scripts/sync_data_to_s3.sh
 - Files are compared by size and modification time
 - Large files may take time to upload depending on your internet connection
 - The script preserves directory structure in S3
+
+
+## Domain Driven Design (DDD) Structure
+The ContraMate project follows Domain-Driven Design (DDD) principles. The key components are organized as follows:
+
+```
+contramate/
+  ├── src/contramate/
+  │   ├── domain/              # DDD Domain Layer
+  │   ├── use_cases/           # DDD Use Cases Layer
+  │   ├── interfaces/          # DDD Interface Layer
+  │   ├── models/filters.py    # OpenSearch Filters
+  │   ├── services/            # OpenSearch Service (updated)
+  │   └── api/main.py          # FastAPI app (chat integrated)
+```

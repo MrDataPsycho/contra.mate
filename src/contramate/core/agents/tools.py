@@ -1,9 +1,6 @@
 import logging
 from enum import StrEnum
-from contramate.utils.settings.core import settings
-from sqlmodel import Session, create_engine, select
 import json
-import pandas as pd
 
 # TODO: These models need to be implemented in contramate
 # from contramate.models.doc_summery import ContractSummary

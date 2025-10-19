@@ -56,7 +56,6 @@ class OrchrastratorAgent:
     
 
 if __name__ == "__main__":
-    from contramate.utils.settings.core import settings
     import logging
 
     logging.basicConfig(

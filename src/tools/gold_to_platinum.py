@@ -209,7 +209,8 @@ async def convert_chunk_to_platinum_model(
     embedding_vector = embedding_response.embeddings[0]
 
     # Create PlatinumModel
-    chunk_id = chunk.chunk_index + 1  # chunk_id starts from 1
+    # Use chunk_index directly as chunk_id (no offset) for consistency
+    chunk_id = chunk.chunk_index
     display_name = f"{chunked_doc.filename}-{chunk_id}"
 
     platinum_model = PlatinumModel(

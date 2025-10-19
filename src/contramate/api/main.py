@@ -7,6 +7,7 @@ from contramate.services.opensearch_status_service import OpenSearchStatusServic
 from contramate.services.openai_status_service import OpenAIStatusService
 from contramate.services.litellm_status_service import LiteLLMStatusService
 from contramate.llm import OpenAIChatClient, LiteLLMChatClient
+from contramate.interfaces.controllers import chat_router
 
 app = FastAPI(
     title="Contramate API",
@@ -33,6 +34,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include chat router
+app.include_router(chat_router)
 
 @app.get("/")
 async def root():

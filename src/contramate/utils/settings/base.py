@@ -1,6 +1,9 @@
 from pathlib import Path
+from typing import TypeVar
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from loguru import logger
+
+T = TypeVar('T', bound='ABCBaseSettings')
 
 
 DEFAULT_ENV_PATH = Path(".envs")
@@ -32,12 +35,16 @@ class ABCBaseSettings(BaseSettings):
     )
 
     @classmethod
-    def from_env_file(cls, env_path: str | Path) -> "ABCBaseSettings":
+    def from_env_file(cls: type[T], env_path: str | Path) -> T:
         """
         Load settings from a specific environment file.
         Raises FileNotFoundError if the file does not exist.
+
         Args:
             env_path: Path to the .env file to load settings from.
+
+        Returns:
+            Instance of the calling class with settings loaded from the env file.
         """
         env_path = Path(env_path)
         if not env_path.exists():
@@ -51,7 +58,7 @@ class ABCBaseSettings(BaseSettings):
                 case_sensitive=False,
             )
 
-        return CustomSettings()
+        return CustomSettings()  # type: ignore[return-value]
     
 
 if __name__ == "__main__":

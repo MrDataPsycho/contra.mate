@@ -16,10 +16,8 @@ from contramate.services.opensearch_vector_crud_service import (
 )
 from contramate.services.opensearch_vector_search_service import (
     OpenSearchVectorSearchService,
-    OpenSearchVectorSearchServiceFactory,
     SearchResult,
     SearchResponse,
-    GlobalFilter,
 )
 
 __all__ = [
@@ -32,8 +30,6 @@ __all__ = [
     "OpenSearchVectorCRUDService",
     "OpenSearchVectorCRUDServiceFactory",
     "OpenSearchVectorSearchService",
-    "OpenSearchVectorSearchServiceFactory",
     "SearchResult",
     "SearchResponse",
-    "GlobalFilter",
 ]

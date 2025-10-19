@@ -12,11 +12,16 @@ from opensearchpy import OpenSearch
 from neopipe import Result, Ok, Err
 from pydantic import BaseModel
 
-from contramate.models.vector import VectorModel, ContentSource
-from contramate.models.gold import DocumentSource
-from contramate.utils.settings.factory import settings_factory
-from contramate.llm.factory import create_default_embedding_client
+from contramate.models.vector import ContentSource
+from contramate.models.filters import OpenSearchFilter
 from contramate.llm.base import BaseEmbeddingClient
+from contramate.llm.openai_embedding_client import OpenAIEmbeddingClient
+from contramate.utils.settings.factory import settings_factory
+from contramate.utils.settings.core import AppSettings, OpenAISettings, OpenSearchSettings
+from contramate.integrations.aws.opensearch import create_opensearch_client
+from contramate.llm.factory import create_default_embedding_client
+from contramate.services.factory import ServiceFactoryABC
+from pathlib import Path
 
 
 class SearchResult(BaseModel):
@@ -34,7 +39,7 @@ class SearchResult(BaseModel):
     char_end: int
     token_count: int
     has_tables: bool
-    score: float
+    score: Optional[float]
     created_at: str
     
     @classmethod
@@ -60,7 +65,7 @@ class SearchResult(BaseModel):
             char_end=source["char_end"],
             token_count=source["token_count"],
             has_tables=source["has_tables"],
-            score=hit["_score"],
+            score=hit.get("_score"),  # Use .get() to handle None when using sort
             created_at=source["created_at"]
         )
 
@@ -79,199 +84,92 @@ class SearchResponse(BaseModel):
     text_weight: Optional[float] = None
 
 
-class GlobalFilter(BaseModel):
-    """Global filter model for search operations supporting both VectorModel and GoldModel fields."""
-    # Core identifiers
-    project_id: Optional[List[str]] = None
-    reference_doc_id: Optional[List[str]] = None
-    chunk_id: Optional[List[int]] = None
-    
-    # Document metadata
-    document_title: Optional[List[str]] = None
-    content_source: Optional[List[ContentSource]] = None
-    doc_source: Optional[List[DocumentSource]] = None  # For GoldModel compatibility
-    contract_type: Optional[List[str]] = None
-    
-    # Content characteristics
-    has_tables: Optional[bool] = None
-    min_token_count: Optional[int] = None
-    max_token_count: Optional[int] = None
-    min_chunk_index: Optional[int] = None
-    max_chunk_index: Optional[int] = None
-    
-    # Date filters
-    created_after: Optional[str] = None  # ISO datetime string
-    created_before: Optional[str] = None  # ISO datetime string
-    
-    def to_opensearch_filters(self) -> List[Dict[str, Any]]:
-        """Convert filter to OpenSearch filter clauses."""
-        filter_clauses = []
-        
-        # Core identifiers
-        if self.project_id:
-            filter_clauses.append({
-                "terms": {"project_id": self.project_id}
-            })
-        
-        if self.reference_doc_id:
-            filter_clauses.append({
-                "terms": {"reference_doc_id": self.reference_doc_id}
-            })
-        
-        if self.chunk_id:
-            filter_clauses.append({
-                "terms": {"chunk_id": self.chunk_id}
-            })
-        
-        # Document metadata
-        if self.document_title:
-            filter_clauses.append({
-                "terms": {"document_title.keyword": self.document_title}
-            })
-        
-        if self.content_source:
-            # Convert enum values to strings
-            content_source_values = [cs.value if isinstance(cs, ContentSource) else cs for cs in self.content_source]
-            filter_clauses.append({
-                "terms": {"content_source": content_source_values}
-            })
-        
-        if self.doc_source:
-            # Convert enum values to strings for GoldModel compatibility
-            doc_source_values = [ds.value if isinstance(ds, DocumentSource) else ds for ds in self.doc_source]
-            filter_clauses.append({
-                "terms": {"doc_source": doc_source_values}
-            })
-        
-        if self.contract_type:
-            filter_clauses.append({
-                "terms": {"contract_type.keyword": self.contract_type}
-            })
-        
-        # Content characteristics
-        if self.has_tables is not None:
-            filter_clauses.append({
-                "term": {"has_tables": self.has_tables}
-            })
-        
-        if self.min_token_count is not None:
-            filter_clauses.append({
-                "range": {"token_count": {"gte": self.min_token_count}}
-            })
-        
-        if self.max_token_count is not None:
-            filter_clauses.append({
-                "range": {"token_count": {"lte": self.max_token_count}}
-            })
-        
-        if self.min_chunk_index is not None:
-            filter_clauses.append({
-                "range": {"chunk_index": {"gte": self.min_chunk_index}}
-            })
-        
-        if self.max_chunk_index is not None:
-            filter_clauses.append({
-                "range": {"chunk_index": {"lte": self.max_chunk_index}}
-            })
-        
-        # Date filters
-        if self.created_after:
-            filter_clauses.append({
-                "range": {"created_at": {"gte": self.created_after}}
-            })
-        
-        if self.created_before:
-            filter_clauses.append({
-                "range": {"created_at": {"lte": self.created_before}}
-            })
-        
-        return filter_clauses
 
 
 class OpenSearchVectorSearchService:
     """
     Advanced search service for OpenSearch vector documents with semantic, text, and hybrid search capabilities.
+
+    Usage Example:
+        >>> from dotenv import load_dotenv
+        >>> load_dotenv(".envs/local.env")
+        >>> from contramate.utils.settings.factory import settings_factory
+        >>> from contramate.integrations.aws.opensearch import create_opensearch_client
+        >>> from contramate.llm.factory import create_default_embedding_client
+        >>>
+        >>> # Create settings
+        >>> app_config = settings_factory.create_app_settings()
+        >>> opensearch_config = settings_factory.create_opensearch_settings()
+        >>>
+        >>> # Create clients
+        >>> opensearch_client = create_opensearch_client(opensearch_config, pool_maxsize=10)
+        >>> embedding_client = create_default_embedding_client()
+        >>>
+        >>> # Initialize service
+        >>> service = OpenSearchVectorSearchService(
+        ...     index_name=app_config.default_index_name,
+        ...     client=opensearch_client,
+        ...     embedding_client=embedding_client
+        ... )
     """
-    
-    def __init__(self, index_name: Optional[str] = None, client: Optional[OpenSearch] = None, embedding_client: Optional[BaseEmbeddingClient] = None):
+
+    def __init__(self, index_name: str, client: OpenSearch, embedding_client: BaseEmbeddingClient):
         """
         Initialize the OpenSearch Vector Search Service.
-        
-        Args:
-            index_name: Name of the OpenSearch index to search in. If None, uses app settings default
-            client: OpenSearch client instance. If None, creates client from settings
-            embedding_client: Embedding client for semantic search. If None, creates default client
-        """
-        self.app_config = settings_factory.create_app_settings()
-        self.opensearch_config = settings_factory.create_opensearch_settings()
-        
-        self.index_name = index_name or self.app_config.default_index_name
-        self.client = client or self._create_client()
-        self.embedding_client = embedding_client or create_default_embedding_client()
-    
-    def _create_client(self) -> OpenSearch:
-        """Create OpenSearch client from settings."""
-        client_config = {
-            'hosts': [{'host': self.opensearch_config.host, 'port': self.opensearch_config.port}],
-            'use_ssl': self.opensearch_config.use_ssl,
-            'verify_certs': self.opensearch_config.verify_certs,
-            'ssl_show_warn': False
-        }
 
-        # Add authentication if credentials are provided
-        if self.opensearch_config.username and self.opensearch_config.password:
-            client_config['http_auth'] = (self.opensearch_config.username, self.opensearch_config.password)
-
-        return OpenSearch(**client_config)
-    
-    def _create_global_filter(self, filters_dict: Optional[Union[Dict[str, Any], GlobalFilter]]) -> Optional[GlobalFilter]:
-        """
-        Convert dictionary filters to GlobalFilter object.
-        
         Args:
-            filters_dict: Dictionary containing filter parameters or GlobalFilter object
-            
+            index_name: Name of the OpenSearch index to search in (required)
+            client: OpenSearch client instance (required)
+            embedding_client: Embedding client for semantic search (required)
+        """
+        self.index_name = index_name
+        self.client = client
+        self.embedding_client = embedding_client
+    
+    def _create_opensearch_filter(self, filters_dict: Optional[Dict[str, Any]]) -> Optional[OpenSearchFilter]:
+        """
+        Convert dictionary filters to OpenSearchFilter object.
+
+        Args:
+            filters_dict: Dictionary containing filter parameters
+
         Returns:
-            GlobalFilter object or None if no filters provided
+            OpenSearchFilter object or None if no filters provided
         """
         if not filters_dict:
             return None
-        
-        # If it's already a GlobalFilter object, return it directly
-        if isinstance(filters_dict, GlobalFilter):
-            return filters_dict
-        
+
         try:
-            return GlobalFilter(**filters_dict)
+            return OpenSearchFilter(**filters_dict)
         except Exception as e:
-            logger.warning(f"⚠️ Failed to create GlobalFilter from dict {filters_dict}: {e}")
+            logger.warning(f"⚠️ Failed to create OpenSearchFilter from dict {filters_dict}: {e}")
             return None
     
     def semantic_search(
         self,
         query: str,
         k: int = 10,
-        filters: Optional[Union[Dict[str, Any], GlobalFilter]] = None,
+        filters: Optional[Dict[str, Any]] = None,
         size: int = 10,
         min_score: float = 0.5,
     ) -> Result[SearchResponse, str]:
         """
         Perform semantic search using vector similarity.
-        
+
         Args:
             query: Text to search for semantically
             k: Number of nearest neighbors to find (default: 10)
-            filters: Optional filters as dictionary or GlobalFilter object
+            filters: Optional filters as dictionary (will be converted to OpenSearchFilter)
             size: Number of results to return (default: 10)
             min_score: Minimum similarity score threshold (default: 0.5)
-            
+
         Returns:
             Result[SearchResponse, str]: Ok with search results, Err with error message
         """
         start_time = time.time()
         try:
-            # Convert dict filters to GlobalFilter object
-            global_filter = self._create_global_filter(filters)
+            # Convert dict filters to OpenSearchFilter object
+            opensearch_filter = self._create_opensearch_filter(filters)
             
             # Generate embedding for the query text
             logger.info(f"🔍 Generating embedding for query: '{query[:50]}...'")
@@ -301,9 +199,9 @@ class OpenSearchVectorSearchService:
             }
             
             # Apply filters if provided
-            if global_filter:
-                filter_clauses = global_filter.to_opensearch_filters()
-                
+            if opensearch_filter:
+                filter_clauses = opensearch_filter.to_opensearch_filters()
+
                 if filter_clauses:
                     search_query["query"] = {
                         "bool": {
@@ -354,17 +252,19 @@ class OpenSearchVectorSearchService:
         query: str,
         fields: Optional[List[str]] = None,
         size: int = 10,
-        filters: Optional[Union[Dict[str, Any], GlobalFilter]] = None,
+        filters: Optional[Dict[str, Any]] = None,
+        min_score: float = 0.5,
     ) -> Result[SearchResponse, str]:
         """
         Perform text-based search using full-text search capabilities.
-        
+
         Args:
             query: Text to search for
-            fields: Fields to search in (default: ["content"])
+            fields: Fields to search in (default: ["content", "section_hierarchy"])
             size: Number of results to return (default: 10)
-            filters: Optional filters as dictionary or GlobalFilter object
-            
+            filters: Optional filters as dictionary (will be converted to OpenSearchFilter)
+            min_score: Minimum score threshold for results (default: 0.0)
+
         Returns:
             Result[SearchResponse, str]: Ok with search results, Err with error message
         """
@@ -372,9 +272,9 @@ class OpenSearchVectorSearchService:
         try:
             if not fields:
                 fields = ["content", "section_hierarchy"]
-            
-            # Convert dict filters to GlobalFilter object
-            global_filter = self._create_global_filter(filters)
+
+            # Convert dict filters to OpenSearchFilter object
+            opensearch_filter = self._create_opensearch_filter(filters)
             
             # Build multi-match query
             excludes = ["vector"]  # Always exclude vector fields
@@ -395,9 +295,9 @@ class OpenSearchVectorSearchService:
             }
             
             # Apply filters if provided
-            if global_filter:
-                filter_clauses = global_filter.to_opensearch_filters()
-                
+            if opensearch_filter:
+                filter_clauses = opensearch_filter.to_opensearch_filters()
+
                 if filter_clauses:
                     search_query["query"] = {
                         "bool": {
@@ -410,16 +310,20 @@ class OpenSearchVectorSearchService:
             
             # Execute search
             response = self.client.search(index=self.index_name, body=search_query)
-            
+
             # Process results
             search_results = []
             for hit in response["hits"]["hits"]:
-                search_result = SearchResult.from_opensearch_hit(hit)
-                search_results.append(search_result)
-            
+                score = hit.get("_score", 0.0)
+
+                # Apply minimum score threshold
+                if score and score >= min_score:
+                    search_result = SearchResult.from_opensearch_hit(hit)
+                    search_results.append(search_result)
+
             execution_time = (time.time() - start_time) * 1000  # Convert to milliseconds
-            
-            logger.info(f"✅ Text search returned {len(search_results)} results")
+
+            logger.info(f"✅ Text search returned {len(search_results)} results above threshold {min_score}")
             
             search_response = SearchResponse(
                 results=search_results,
@@ -428,6 +332,7 @@ class OpenSearchVectorSearchService:
                 query=query,
                 execution_time_ms=execution_time,
                 size=size,
+                min_score=min_score,
                 filters=filters if isinstance(filters, dict) else None
             )
             
@@ -446,11 +351,11 @@ class OpenSearchVectorSearchService:
         text_weight: float = 0.3,
         min_score: float = 0.5,
         fields: Optional[List[str]] = None,
-        filters: Optional[Union[Dict[str, Any], GlobalFilter]] = None,
+        filters: Optional[Dict[str, Any]] = None,
     ) -> Result[SearchResponse, str]:
         """
         Perform hybrid search combining semantic and text search with weighted scoring.
-        
+
         Args:
             query: Text to search for
             size: Number of results to return (default: 10)
@@ -458,15 +363,15 @@ class OpenSearchVectorSearchService:
             text_weight: Weight for text search results (default: 0.3)
             min_score: Minimum combined score threshold (default: 0.5)
             fields: Fields to search in for text search
-            filters: Optional filters as dictionary or GlobalFilter object
-            
+            filters: Optional filters as dictionary (will be converted to OpenSearchFilter)
+
         Returns:
             Result[SearchResponse, str]: Ok with combined results, Err with error message
         """
         start_time = time.time()
         try:
-            # Convert dict filters to GlobalFilter object
-            global_filter = self._create_global_filter(filters)
+            # Convert dict filters to OpenSearchFilter object
+            opensearch_filter = self._create_opensearch_filter(filters)
             
             # Generate embedding for semantic search
             logger.info(f"🔍 Performing hybrid search for: '{query[:50]}...'")
@@ -546,9 +451,9 @@ class OpenSearchVectorSearchService:
             }
             
             # Apply filters if provided
-            if global_filter:
-                filter_clauses = global_filter.to_opensearch_filters()
-                
+            if opensearch_filter:
+                filter_clauses = opensearch_filter.to_opensearch_filters()
+
                 if filter_clauses:
                     # Add filter to the bool query inside function_score
                     search_query["query"]["function_score"]["query"]["bool"]["filter"] = filter_clauses
@@ -673,24 +578,24 @@ class OpenSearchVectorSearchService:
         self,
         record_id: str,
         size: int = 5,
-        filters: Optional[Union[Dict[str, Any], GlobalFilter]] = None,
+        filters: Optional[Dict[str, Any]] = None,
     ) -> Result[SearchResponse, str]:
         """
         Find documents similar to a given document using its vector.
-        
+
         Args:
             record_id: Record ID of the reference document
             size: Number of similar documents to return
-            filters: Optional filters as dictionary or GlobalFilter object
-            
+            filters: Optional filters as dictionary (will be converted to OpenSearchFilter)
+
         Returns:
             Result[SearchResponse, str]: Ok with similar documents, Err with error message
         """
         try:
             start_time = time.time()
-            
-            # Convert dict filters to GlobalFilter object
-            global_filter = self._create_global_filter(filters)
+
+            # Convert dict filters to OpenSearchFilter object
+            opensearch_filter = self._create_opensearch_filter(filters)
             
             # First, get the vector of the reference document
             get_query = {
@@ -742,8 +647,8 @@ class OpenSearchVectorSearchService:
             }
             
             # Apply additional filters if provided
-            if global_filter:
-                filter_clauses = global_filter.to_opensearch_filters()
+            if opensearch_filter:
+                filter_clauses = opensearch_filter.to_opensearch_filters()
                 if filter_clauses:
                     search_query["query"]["bool"]["filter"] = filter_clauses
             
@@ -861,70 +766,59 @@ class OpenSearchVectorSearchService:
             return Err(error_msg)
 
 
-# Factory function for creating search service
-class OpenSearchVectorSearchServiceFactory:
+
+class OpenSearchVectorSearchServiceFactory(ServiceFactoryABC[OpenSearchVectorSearchService]):
     """Factory for creating OpenSearchVectorSearchService instances."""
     
-    @staticmethod
-    def create_default() -> OpenSearchVectorSearchService:
+    @classmethod
+    def create_default(cls) -> OpenSearchVectorSearchService:
         """
         Create a default OpenSearchVectorSearchService instance using app settings.
         
         Returns:
             Configured OpenSearchVectorSearchService instance
         """
-        return OpenSearchVectorSearchService()
-    
-    @staticmethod
-    def create_with_index(index_name: str) -> OpenSearchVectorSearchService:
-        """
-        Create an OpenSearchVectorSearchService instance with specific index.
+        app_settings = settings_factory.create_app_settings()
+        opensearch_settings = settings_factory.create_opensearch_settings()
+        opensearch_client = create_opensearch_client(opensearch_settings)
+        embedding_client = create_default_embedding_client()
         
+        return OpenSearchVectorSearchService(
+            index_name=app_settings.default_index_name,
+            client=opensearch_client,
+            embedding_client=embedding_client
+        )
+    
+    @classmethod
+    def from_env_file(cls, env_path: str | Path) -> OpenSearchVectorSearchService:
+        """
+        Create an OpenSearchVectorSearchService instance using settings from a specific environment file.
+
         Args:
-            index_name: Name of the OpenSearch index to use
-            
+            env_path: Path to the .env file to load settings from
         Returns:
             Configured OpenSearchVectorSearchService instance
         """
-        return OpenSearchVectorSearchService(index_name=index_name)
+        app_settings = AppSettings.from_env_file(env_path=env_path)
+        opensearch_settings = OpenSearchSettings.from_env_file(env_path=env_path)
+        openai_settings = OpenAISettings.from_env_file(env_path=env_path)
+
+        opensearch_client = create_opensearch_client(opensearch_settings)
+
+        # Create embedding client directly with settings from env file
+        embedding_client = OpenAIEmbeddingClient(
+            api_key=openai_settings.api_key,
+            embedding_model=openai_settings.embedding_model,
+            openai_settings=openai_settings
+        )
+
+        return OpenSearchVectorSearchService(
+            index_name=app_settings.default_index_name,
+            client=opensearch_client,
+            embedding_client=embedding_client
+        )
 
 
 if __name__ == "__main__":
-    # Example usage and testing
-    search_service = OpenSearchVectorSearchServiceFactory.create_default()
-    
-    # Test semantic search
-    logger.info("🔍 Testing OpenSearch Vector Search Service")
-    logger.info("=" * 60)
-    
-    # Test 1: Semantic search
-    logger.info("Test 1: Semantic search")
-    semantic_result = search_service.semantic_search("contract termination", size=5)
-    if semantic_result.is_ok():
-        response = semantic_result.unwrap()
-        logger.info(f"✅ Semantic search: {len(response.results)} results in {response.execution_time_ms:.1f}ms")
-    else:
-        logger.error(f"❌ Semantic search failed: {semantic_result.err()}")
-    
-    # Test 2: Text search with filters
-    logger.info("\nTest 2: Text search with filters")
-    filters = {"project_id": ["test-project"]}
-    text_result = search_service.text_search("contract", size=3, filters=filters)
-    if text_result.is_ok():
-        response = text_result.unwrap()
-        logger.info(f"✅ Text search: {len(response.results)} results in {response.execution_time_ms:.1f}ms")
-    else:
-        logger.error(f"❌ Text search failed: {text_result.err()}")
-    
-    # Test 3: Hybrid search
-    logger.info("\nTest 3: Hybrid search")
-    hybrid_result = search_service.hybrid_search("important legal terms", size=3)
-    if hybrid_result.is_ok():
-        response = hybrid_result.unwrap()
-        logger.info(f"✅ Hybrid search: {len(response.results)} results in {response.execution_time_ms:.1f}ms")
-        logger.info(f"   Weights: semantic={response.semantic_weight}, text={response.text_weight}")
-    else:
-        logger.error(f"❌ Hybrid search failed: {hybrid_result.err()}")
-    
-    logger.info("\n" + "=" * 60)
-    logger.info("🎉 Search service testing completed!")
+    # Test factory methods
+    logger.info("🔍 Testing OpenSearchVectorSearchServiceFactory")
