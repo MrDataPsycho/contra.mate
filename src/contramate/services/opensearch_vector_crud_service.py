@@ -11,7 +11,8 @@ from opensearchpy.exceptions import NotFoundError
 from loguru import logger
 from neopipe import Result, Ok, Err
 
-from contramate.models.vector import VectorModel, ContentSource
+from contramate.models.platinum import PlatinumModel
+from contramate.models.gold import DocumentSource
 from contramate.utils.settings.factory import settings_factory
 from contramate.llm.factory import create_default_embedding_client
 
@@ -69,16 +70,16 @@ class OpenSearchVectorCRUDService:
             logger.error(f"Error generating embedding: {e}")
             raise
     
-    def insert_document(self, document: VectorModel, auto_embed: bool = True) -> Result[VectorModel, str]:
+    def insert_document(self, document: PlatinumModel, auto_embed: bool = True) -> Result[PlatinumModel, str]:
         """
         Insert a document into the OpenSearch index.
-        
+
         Args:
-            document: VectorModel to insert
+            document: PlatinumModel to insert
             auto_embed: If True, automatically generate embedding from content
-            
+
         Returns:
-            Result[VectorModel, str]: Ok with inserted document if successful, Err with error message if failed
+            Result[PlatinumModel, str]: Ok with inserted document if successful, Err with error message if failed
         """
         try:
             # Generate embedding if requested and not already present
@@ -88,7 +89,7 @@ class OpenSearchVectorCRUDService:
                 # Create new document with embedding
                 doc_data = document.model_dump()
                 doc_data["vector"] = embedding
-                document = VectorModel(**doc_data)
+                document = PlatinumModel(**doc_data)
             
             # Convert to OpenSearch format
             formatted_document = document.to_opensearch_doc()
@@ -113,15 +114,15 @@ class OpenSearchVectorCRUDService:
             logger.error(f"❌ {error_msg}")
             return Err(error_msg)
     
-    def get_document_by_record_id(self, record_id: str) -> Result[Optional[VectorModel], str]:
+    def get_document_by_record_id(self, record_id: str) -> Result[Optional[PlatinumModel], str]:
         """
         Get a document by its record_id.
-        
+
         Args:
             record_id: The record ID to search for
-            
+
         Returns:
-            Result[Optional[VectorModel], str]: Ok with document if found (None if not found), Err with error message if failed
+            Result[Optional[PlatinumModel], str]: Ok with document if found (None if not found), Err with error message if failed
         """
         try:
             response = self.client.get(index=self.index_name, id=record_id)
@@ -129,7 +130,7 @@ class OpenSearchVectorCRUDService:
             if response.get('found'):
                 doc_data = response['_source']
                 logger.info(f"Found document with record_id: {record_id}")
-                document = VectorModel.from_opensearch_doc(doc_data)
+                document = PlatinumModel.from_opensearch_doc(doc_data)
                 return Ok(document)
             else:
                 logger.info(f"No document found with record_id: {record_id}")
@@ -143,16 +144,16 @@ class OpenSearchVectorCRUDService:
             logger.error(error_msg)
             return Err(error_msg)
     
-    def update_document(self, document: VectorModel, auto_embed: bool = True) -> Result[VectorModel, str]:
+    def update_document(self, document: PlatinumModel, auto_embed: bool = True) -> Result[PlatinumModel, str]:
         """
         Update a document using its record_id.
-        
+
         Args:
-            document: Updated VectorModel
+            document: Updated PlatinumModel
             auto_embed: If True, automatically regenerate embedding from content
-            
+
         Returns:
-            Result[VectorModel, str]: Ok with updated document if successful, Err with error message if failed
+            Result[PlatinumModel, str]: Ok with updated document if successful, Err with error message if failed
         """
         try:
             # Generate embedding if requested
@@ -162,8 +163,8 @@ class OpenSearchVectorCRUDService:
                 # Create new document with updated embedding
                 doc_data = document.model_dump()
                 doc_data["vector"] = embedding
-                document = VectorModel(**doc_data)
-            
+                document = PlatinumModel(**doc_data)
+
             # Convert to OpenSearch format
             formatted_document = document.to_opensearch_doc()
             
@@ -218,16 +219,16 @@ class OpenSearchVectorCRUDService:
             logger.error(f"❌ {error_msg}")
             return Err(error_msg)
 
-    def upsert_document(self, document: VectorModel, auto_embed: bool = True) -> Result[VectorModel, str]:
+    def upsert_document(self, document: PlatinumModel, auto_embed: bool = True) -> Result[PlatinumModel, str]:
         """
         Upsert (insert or update) a document based on record_id.
-        
+
         Args:
-            document: VectorModel to upsert
+            document: PlatinumModel to upsert
             auto_embed: If True, automatically generate/regenerate embedding
-            
+
         Returns:
-            Result[VectorModel, str]: Ok with upserted document if successful, Err with error message if failed
+            Result[PlatinumModel, str]: Ok with upserted document if successful, Err with error message if failed
         """
         try:
             # Check if document exists
@@ -250,16 +251,16 @@ class OpenSearchVectorCRUDService:
             logger.error(f"❌ {error_msg}")
             return Err(error_msg)
     
-    def insert_document_if_not_exists(self, document: VectorModel, auto_embed: bool = True) -> Result[Optional[VectorModel], str]:
+    def insert_document_if_not_exists(self, document: PlatinumModel, auto_embed: bool = True) -> Result[Optional[PlatinumModel], str]:
         """
         Insert a document only if no document with the same record_id exists.
-        
+
         Args:
-            document: VectorModel to insert
+            document: PlatinumModel to insert
             auto_embed: If True, automatically generate embedding
-            
+
         Returns:
-            Result[Optional[VectorModel], str]: Ok with inserted document if successful (None if already exists), Err with error message if failed
+            Result[Optional[PlatinumModel], str]: Ok with inserted document if successful (None if already exists), Err with error message if failed
         """
         try:
             # Check if document already exists
@@ -285,15 +286,15 @@ class OpenSearchVectorCRUDService:
             logger.error(f"❌ {error_msg}")
             return Err(error_msg)
     
-    def bulk_insert_documents(self, documents: List[VectorModel], auto_embed: bool = True) -> Result[Dict[str, int], str]:
+    def bulk_insert_documents(self, documents: List[PlatinumModel], auto_embed: bool = True) -> Result[Dict[str, int], str]:
         """
         Bulk insert multiple documents (will overwrite existing documents with same record_id).
         For upsert behavior that checks existence, use bulk_upsert_documents instead.
-        
+
         Args:
-            documents: List of VectorModel documents to insert
+            documents: List of PlatinumModel documents to insert
             auto_embed: If True, automatically generate embeddings
-            
+
         Returns:
             Result[Dict[str, int], str]: Ok with success/failure counts if successful, Err with error message if failed
         """
@@ -307,7 +308,7 @@ class OpenSearchVectorCRUDService:
                     embedding = self._generate_embedding(document.content)
                     doc_data = document.model_dump()
                     doc_data["vector"] = embedding
-                    document = VectorModel(**doc_data)
+                    document = PlatinumModel(**doc_data)
                 
                 # Add index action
                 bulk_body.append({
@@ -347,15 +348,15 @@ class OpenSearchVectorCRUDService:
             logger.error(f"❌ {error_msg}")
             return Err(error_msg)
 
-    def bulk_upsert_documents(self, documents: List[VectorModel], auto_embed: bool = True) -> Result[Dict[str, int], str]:
+    def bulk_upsert_documents(self, documents: List[PlatinumModel], auto_embed: bool = True) -> Result[Dict[str, int], str]:
         """
-        Bulk upsert multiple documents - checks if record exists and only updates if it exists, 
+        Bulk upsert multiple documents - checks if record exists and only updates if it exists,
         otherwise inserts new records. Prevents duplicates at OpenSearch level.
-        
+
         Args:
-            documents: List of VectorModel documents to upsert
+            documents: List of PlatinumModel documents to upsert
             auto_embed: If True, automatically generate embeddings
-            
+
         Returns:
             Result[Dict[str, int], str]: Ok with counts (inserted, updated, failed), Err with error message if failed
         """
@@ -390,7 +391,7 @@ class OpenSearchVectorCRUDService:
                     embedding = self._generate_embedding(document.content)
                     doc_data = document.model_dump()
                     doc_data["vector"] = embedding
-                    document = VectorModel(**doc_data)
+                    document = PlatinumModel(**doc_data)
                 
                 # Determine if this is an insert or update
                 is_update = document.record_id in existing_docs
@@ -452,16 +453,16 @@ class OpenSearchVectorCRUDService:
             logger.error(f"❌ {error_msg}")
             return Err(error_msg)
     
-    def search_by_project_id(self, project_id: str, limit: int = 100) -> Result[List[VectorModel], str]:
+    def search_by_project_id(self, project_id: str, limit: int = 100) -> Result[List[PlatinumModel], str]:
         """
         Search documents by project_id.
-        
+
         Args:
             project_id: Project ID to search for
             limit: Maximum number of documents to return
-            
+
         Returns:
-            Result[List[VectorModel], str]: Ok with document list if successful, Err with error message if failed
+            Result[List[PlatinumModel], str]: Ok with document list if successful, Err with error message if failed
         """
         try:
             search_query = {
@@ -478,7 +479,7 @@ class OpenSearchVectorCRUDService:
             documents = []
             for hit in response["hits"]["hits"]:
                 doc_data = hit["_source"]
-                documents.append(VectorModel.from_opensearch_doc(doc_data))
+                documents.append(PlatinumModel.from_opensearch_doc(doc_data))
             
             logger.info(f"Found {len(documents)} documents for project_id: {project_id}")
             return Ok(documents)
@@ -534,7 +535,7 @@ class OpenSearchVectorCRUDService:
             results = []
             for hit in response["hits"]["hits"]:
                 result = {
-                    "document": VectorModel.from_opensearch_doc(hit["_source"]),
+                    "document": PlatinumModel.from_opensearch_doc(hit["_source"]),
                     "score": hit["_score"],
                     "record_id": hit["_id"]
                 }
@@ -609,17 +610,18 @@ class OpenSearchVectorCRUDServiceFactory:
 def main():
     """Main function to test the CRUD service"""
     from datetime import datetime, timezone
-    
+
     # Test the CRUD service
     crud_service = OpenSearchVectorCRUDServiceFactory.create_default()
-    
+
     # Create a test document
-    test_doc = VectorModel(
+    test_doc = PlatinumModel(
         chunk_id=1,
         project_id="test-project",
         reference_doc_id="test-doc",
         document_title="Test Contract",
-        content_source=ContentSource.upload,
+        display_name="Test Contract-1",
+        content_source=DocumentSource.upload,
         contract_type="service_agreement",
         content="This is a test contract with important legal terms and conditions.",
         chunk_index=0,

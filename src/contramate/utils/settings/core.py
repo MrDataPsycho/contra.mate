@@ -101,7 +101,7 @@ class AppSettings(ABCBaseSettings):
     debug: bool = Field(default=True, description="Debug mode")
     host: str = Field(default="0.0.0.0", description="Application host")
     port: int = Field(default=8000, description="Application port")
-    vector_dimension: int = Field(default=3072, description="Vector dimension for embeddings (e.g., 3072 for text-embedding-3-large)")
+    vector_dimension: int = Field(description="Vector dimension for embeddings (e.g., 1536 for text-embedding-3-small, 3072 for text-embedding-3-large)")
     default_index_name: str = Field(default="contracts-test", description="Default OpenSearch index name")
 
     model_config = ABCBaseSettings.model_config.copy()

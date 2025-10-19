@@ -5,8 +5,12 @@ class DocumentIndexConfig:
     """OpenSearch index configuration for document chunks with hybrid search capabilities."""
 
     @staticmethod
-    def get_index_mapping(vector_dimension: int = 3072) -> Dict[str, Any]:
-        """Get complete OpenSearch index configuration including settings and mappings."""
+    def get_index_mapping(vector_dimension: int) -> Dict[str, Any]:
+        """Get complete OpenSearch index configuration including settings and mappings.
+
+        Args:
+            vector_dimension: Vector dimension for embeddings (must match embedding model)
+        """
         return {
             "settings": {
                 "number_of_shards": 1,

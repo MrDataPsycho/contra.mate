@@ -289,9 +289,10 @@ def index(
                     execution_time = time.time() - start_time
 
                     # Update status to PROCESSED
+                    app_settings = settings_factory.create_app_settings()
                     status_record.status = ProcessingStatus.PROCESSED
                     status_record.indexed_chunks_count = bulk_stats["success"]
-                    status_record.vector_dimension = 3072  # From app settings
+                    status_record.vector_dimension = app_settings.vector_dimension
                     status_record.index_name = crud_service.index_name
                     status_record.execution_time = execution_time
                     status_record.updated_at = datetime.now(timezone.utc)

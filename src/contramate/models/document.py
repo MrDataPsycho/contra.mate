@@ -22,6 +22,7 @@ class DocumentInfo:
     """Document information value object for chunking context."""
     project_id: str
     reference_doc_id: str
+    filename: str  # Original filename with .md extension
     contract_type: str
 
 
@@ -45,6 +46,7 @@ class ChunkedDocument(BaseModel):
     # File-level metadata
     project_id: str = Field(..., description="Project identifier")
     reference_doc_id: str = Field(..., description="Reference document identifier")
+    filename: str = Field(..., description="Original source filename (with .md extension)")
     contract_type: str = Field(..., description="Type of contract")
     total_chunks: int = Field(..., description="Total number of chunks in document")
     original_markdown_length: int = Field(..., description="Length of original markdown in characters")
@@ -155,6 +157,7 @@ class EnrichedDocument(ChunkedDocument):
         return cls(
             project_id=chunked_doc.project_id,
             reference_doc_id=chunked_doc.reference_doc_id,
+            filename=chunked_doc.filename,
             contract_type=chunked_doc.contract_type,
             total_chunks=chunked_doc.total_chunks,
             original_markdown_length=chunked_doc.original_markdown_length,

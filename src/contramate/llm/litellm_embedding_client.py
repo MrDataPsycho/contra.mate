@@ -226,43 +226,61 @@ class LiteLLMEmbeddingClient(BaseEmbeddingClient):
         self,
         texts: Union[str, List[str]],
         model: Optional[str] = None,
+        max_retries: int = 5,
         **kwargs
     ) -> EmbeddingResponse:
         """
-        Create embeddings for text input(s) asynchronously
+        Create embeddings for text input(s) asynchronously with retry logic
 
         Args:
             texts: Text string or list of text strings to embed
             model: Embedding model to use (optional)
+            max_retries: Maximum number of retry attempts for rate limits (default: 5)
             **kwargs: Additional parameters for LiteLLM API
 
         Returns:
             EmbeddingResponse: Standardized embedding response
         """
-        try:
-            # Ensure texts is a list
-            input_texts = [texts] if isinstance(texts, str) else texts
-            
-            # Set up parameters for LiteLLM embedding with Azure support
-            embedding_params = {
-                "model": self._get_embedding_model(model),
-                "input": input_texts,
-                **kwargs
-            }
-            
-            # Add Azure or OpenAI specific parameters
-            embedding_params.update(self._prepare_azure_params())
+        # Ensure texts is a list
+        input_texts = [texts] if isinstance(texts, str) else texts
 
-            response = await litellm.aembedding(**embedding_params)
-            
-            return self._create_embedding_response(response)
+        # Set up parameters for LiteLLM embedding with Azure support
+        embedding_params = {
+            "model": self._get_embedding_model(model),
+            "input": input_texts,
+            **kwargs
+        }
 
-        except (AuthenticationError, RateLimitError, APIConnectionError, APIError) as e:
-            logger.error(f"LiteLLM API error in async embedding creation: {e}")
-            raise
-        except Exception as e:
-            logger.error(f"Unexpected error in LiteLLM async embedding creation: {e}")
-            raise
+        # Add Azure or OpenAI specific parameters
+        embedding_params.update(self._prepare_azure_params())
+
+        # Retry logic with exponential backoff
+        retry_count = 0
+        base_delay = 1.0  # Start with 1 second
+
+        while retry_count <= max_retries:
+            try:
+                response = await litellm.aembedding(**embedding_params)
+                return self._create_embedding_response(response)
+
+            except RateLimitError as e:
+                retry_count += 1
+
+                if retry_count > max_retries:
+                    logger.error(f"Max retries ({max_retries}) exceeded for rate limit error: {e}")
+                    raise
+
+                # Exponential backoff: 1s, 2s, 4s, 8s, 16s
+                delay = base_delay * (2 ** (retry_count - 1))
+                logger.warning(f"Rate limit hit. Retry {retry_count}/{max_retries} after {delay}s delay...")
+                await asyncio.sleep(delay)
+
+            except (AuthenticationError, APIConnectionError, APIError) as e:
+                logger.error(f"LiteLLM API error in async embedding creation: {e}")
+                raise
+            except Exception as e:
+                logger.error(f"Unexpected error in LiteLLM async embedding creation: {e}")
+                raise
 
 
 if __name__ == "__main__":

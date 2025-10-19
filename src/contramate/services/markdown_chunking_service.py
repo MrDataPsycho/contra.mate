@@ -281,6 +281,7 @@ class MarkdownChunkingService:
             return ChunkedDocument(
                 project_id=self.doc_info.project_id,
                 reference_doc_id=self.doc_info.reference_doc_id,
+                filename=self.doc_info.filename,
                 contract_type=self.doc_info.contract_type,
                 total_chunks=0,
                 original_markdown_length=0,
@@ -502,6 +503,7 @@ class MarkdownChunkingService:
             chunked_doc = ChunkedDocument(
                 project_id=self.doc_info.project_id,
                 reference_doc_id=self.doc_info.reference_doc_id,
+                filename=self.doc_info.filename,
                 contract_type=self.doc_info.contract_type,
                 total_chunks=len(chunks),
                 original_markdown_length=len(markdown_content),
@@ -516,6 +518,7 @@ class MarkdownChunkingService:
             return ChunkedDocument(
                 project_id=self.doc_info.project_id,
                 reference_doc_id=self.doc_info.reference_doc_id,
+                filename=self.doc_info.filename,
                 contract_type=self.doc_info.contract_type,
                 total_chunks=0,
                 original_markdown_length=len(self.markdown_content) if self.markdown_content else 0,

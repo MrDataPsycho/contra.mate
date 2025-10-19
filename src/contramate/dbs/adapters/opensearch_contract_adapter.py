@@ -16,8 +16,8 @@ class OpenSearchContractAdapter(VectorDBABC):
     def __init__(
         self,
         opensearch_settings: OpenSearchSettings,
+        embedding_dimension: int,
         index_name: Optional[str] = None,
-        embedding_dimension: int = 3072,  # Default for text-embedding-3-large
         embedding_client: Optional[BaseEmbeddingClient] = None
     ):
         """
@@ -25,8 +25,8 @@ class OpenSearchContractAdapter(VectorDBABC):
 
         Args:
             opensearch_settings: OpenSearch configuration settings
+            embedding_dimension: Dimension of the embedding vectors (must match embedding model)
             index_name: Override index name (uses opensearch_settings.get_index_name() if None)
-            embedding_dimension: Dimension of the embedding vectors
             embedding_client: Embedding client for generating vectors (auto-selected if None)
         """
         self.opensearch_settings = opensearch_settings

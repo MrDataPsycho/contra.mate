@@ -73,17 +73,17 @@ def save_chunked_document(chunked_doc, project_id: str, reference_doc_id: str) -
     Args:
         chunked_doc: ChunkedDocument or EnrichedDocument to save
         project_id: Project identifier
-        reference_doc_id: Document identifier
+        reference_doc_id: Document identifier (internal doc ID for directory structure)
 
     Returns:
         Path to saved JSON file
     """
-    # Create output directory
-    output_dir = GOLD_BASE_PATH / project_id
+    # Create output directory: project_id/reference_doc_id/
+    output_dir = GOLD_BASE_PATH / project_id / reference_doc_id
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Save as JSON with indent=2
-    output_path = output_dir / f"{reference_doc_id}.json"
+    # Save as JSON using original filename + .json (filename already has .md)
+    output_path = output_dir / f"{chunked_doc.filename}.json"
     chunked_doc.save_json(output_path)
 
     return output_path
@@ -103,9 +103,9 @@ def chunk(
         help="Skip documents that are already processed"
     ),
     token_limit: int = typer.Option(
-        5000,
+        4000,
         "--token-limit",
-        help="Maximum tokens per chunk"
+        help="Maximum tokens per chunk (must be less than embedding model limit of 8192)"
     ),
     min_chunk_size: int = typer.Option(
         100,
@@ -244,14 +244,18 @@ def chunk(
                     with open(md_file, 'r', encoding='utf-8') as f:
                         markdown_content = f.read()
 
-                    # Step 2: Create DocumentInfo
+                    # Step 2: Extract filename (with .md extension)
+                    filename = md_file.name  # Gets filename with extension
+
+                    # Step 3: Create DocumentInfo with filename
                     doc_info = DocumentInfo(
                         project_id=project_id,
                         reference_doc_id=reference_doc_id,
+                        filename=filename,
                         contract_type=contract.contract_type or "Unknown"
                     )
 
-                    # Step 3: Chunk document
+                    # Step 4: Chunk document
                     chunking_service = MarkdownChunkingService(
                         markdown_content=markdown_content,
                         doc_info=doc_info,
@@ -266,7 +270,7 @@ def chunk(
 
                     chunked_doc = chunked_doc_result.unwrap()
 
-                    # Step 4: Optionally enrich chunks (async/parallel with full document context)
+                    # Step 5: Optionally enrich chunks (async/parallel with full document context)
                     final_doc = chunked_doc
                     if enrich and enrichment_service:
                         enriched_doc_result = enrichment_service.execute(chunked_doc)
@@ -274,7 +278,7 @@ def chunk(
                             raise RuntimeError(f"Enrichment failed: {enriched_doc_result.unwrap_err()}")
                         final_doc = enriched_doc_result.unwrap()
 
-                    # Step 5: Save document (chunked or enriched)
+                    # Step 6: Save document (chunked or enriched)
                     save_chunked_document(final_doc, project_id, reference_doc_id)
 
                     execution_time = time.time() - start_time
