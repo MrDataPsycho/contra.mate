@@ -4,29 +4,10 @@ from pydantic import BaseModel
 
 
 class ChatMessage(BaseModel):
-    """Standardized chat message format"""
+    """Standardized chat message format for convenience"""
     role: str  # "user", "assistant", "system"
     content: str
     name: Optional[str] = None
-
-
-class ChatResponse(BaseModel):
-    """Standardized chat response format"""
-    content: str
-    model: str
-    usage: Dict[str, int]
-    response_id: str
-    finish_reason: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
-
-
-class EmbeddingResponse(BaseModel):
-    """Standardized embedding response format"""
-    embeddings: List[List[float]]  # List of embedding vectors
-    model: str
-    usage: Dict[str, int]
-    dimensions: int
-    metadata: Optional[Dict[str, Any]] = None
 
 
 class BaseClient(ABC):
@@ -73,8 +54,8 @@ class BaseChatClient(BaseClient):
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs
-    ) -> ChatResponse:
-        """Synchronous chat completion"""
+    ) -> Any:
+        """Synchronous chat completion - Returns native OpenAI SDK response"""
         pass
 
     @abstractmethod
@@ -85,8 +66,8 @@ class BaseChatClient(BaseClient):
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs
-    ) -> ChatResponse:
-        """Asynchronous chat completion"""
+    ) -> Any:
+        """Asynchronous chat completion - Returns native OpenAI SDK response"""
         pass
 
     @abstractmethod
@@ -104,8 +85,8 @@ class BaseEmbeddingClient(BaseClient):
         texts: Union[str, List[str]],
         model: Optional[str] = None,
         **kwargs
-    ) -> EmbeddingResponse:
-        """Synchronous embedding creation"""
+    ) -> Any:
+        """Synchronous embedding creation - Returns native OpenAI SDK response"""
         pass
 
     @abstractmethod
@@ -114,8 +95,8 @@ class BaseEmbeddingClient(BaseClient):
         texts: Union[str, List[str]],
         model: Optional[str] = None,
         **kwargs
-    ) -> EmbeddingResponse:
-        """Asynchronous embedding creation"""
+    ) -> Any:
+        """Asynchronous embedding creation - Returns native OpenAI SDK response"""
         pass
 
     @abstractmethod

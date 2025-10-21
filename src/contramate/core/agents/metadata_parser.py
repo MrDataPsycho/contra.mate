@@ -347,6 +347,7 @@ class MetadataParserAgent:
                 {"role": "user", "content": user_prompt},
             ],
             temperature=0.1,  # Low temperature for factual extraction
+            max_tokens=16384,  # High limit for comprehensive metadata extraction (default was 1024)
             response_format={
                 "type": "json_schema",
                 "json_schema": {
@@ -359,14 +360,15 @@ class MetadataParserAgent:
 
         # Parse and validate response against ContractMetadata schema
         try:
-            metadata_dict = json.loads(response.content)
+            metadata_dict = json.loads(response.choices[0].message.content)
         except json.JSONDecodeError as e:
             # Log the error with details for debugging
+            content = response.choices[0].message.content
             logger.error(f"JSON parsing failed: {e}")
-            logger.error(f"Response length: {len(response.content)} chars")
-            logger.error(f"First 300 chars: {response.content[:300]}")
-            logger.error(f"Last 300 chars: {response.content[-300:]}")
-            logger.error(f"Error at position {e.pos}: {response.content[max(0, e.pos-50):min(len(response.content), e.pos+50)]}")
+            logger.error(f"Response length: {len(content)} chars")
+            logger.error(f"First 300 chars: {content[:300]}")
+            logger.error(f"Last 300 chars: {content[-300:]}")
+            logger.error(f"Error at position {e.pos}: {content[max(0, e.pos-50):min(len(content), e.pos+50)]}")
             raise ValueError(f"LLM returned invalid JSON: {str(e)}")
 
         # Validate against schema (this will raise ValidationError if invalid)

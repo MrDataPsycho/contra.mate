@@ -123,7 +123,26 @@ def extract(
         contracts = session.exec(statement).all()
         total_documents = len(contracts)
 
-        console.print(f"[cyan]Found {total_documents} documents to process[/cyan]\n")
+        # Pre-check: Count how many will be skipped
+        already_processed_count = 0
+        if skip_existing:
+            for contract in contracts:
+                existing_status = session.exec(
+                    select(DocumentMetadataExtractionStatus)
+                    .where(DocumentMetadataExtractionStatus.project_id == contract.project_id)
+                    .where(DocumentMetadataExtractionStatus.reference_doc_id == contract.reference_doc_id)
+                    .where(DocumentMetadataExtractionStatus.status == ProcessingStatus.PROCESSED)
+                ).first()
+                if existing_status:
+                    already_processed_count += 1
+
+        to_process_count = total_documents - already_processed_count
+
+        console.print(f"[cyan]Found {total_documents} total documents[/cyan]")
+        if skip_existing and already_processed_count > 0:
+            console.print(f"[yellow]  - {already_processed_count} already processed (will skip)[/yellow]")
+            console.print(f"[green]  - {to_process_count} to process[/green]")
+        console.print()
 
         # Counter for progress reporting
         doc_counter = 0
@@ -143,11 +162,10 @@ def extract(
                 # Check if already processed
                 if skip_existing:
                     existing_status = session.exec(
-                        select(DocumentMetadataExtractionStatus).where(
-                            DocumentMetadataExtractionStatus.project_id == project_id,
-                            DocumentMetadataExtractionStatus.reference_doc_id == reference_doc_id,
-                            DocumentMetadataExtractionStatus.status == ProcessingStatus.PROCESSED
-                        )
+                        select(DocumentMetadataExtractionStatus)
+                        .where(DocumentMetadataExtractionStatus.project_id == project_id)
+                        .where(DocumentMetadataExtractionStatus.reference_doc_id == reference_doc_id)
+                        .where(DocumentMetadataExtractionStatus.status == ProcessingStatus.PROCESSED)
                     ).first()
 
                     if existing_status:

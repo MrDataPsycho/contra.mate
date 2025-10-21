@@ -88,8 +88,8 @@ TASK: Create an enriched summary of this chunk that preserves ALL critical detai
                 temperature=0.3,
             )
 
-            # Extract enriched text (ChatResponse has content field directly)
-            enriched_text = response.content.strip()
+            # Extract enriched text from native OpenAI response
+            enriched_text = response.choices[0].message.content.strip()
 
             # Create and return enriched chunk
             enriched_chunk = EnrichedChunk.from_chunk(chunk, enriched_text)

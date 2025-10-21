@@ -1,13 +1,11 @@
 from typing import List, Dict, Any, Optional, Union
-import logging
+from loguru import logger
 from openai import OpenAI, AsyncOpenAI
 from openai import OpenAIError
 
 from contramate.utils.settings.core import OpenAISettings
 from contramate.utils.settings.factory import settings_factory
-from contramate.llm.base import BaseEmbeddingClient, EmbeddingResponse
-
-logger = logging.getLogger(__name__)
+from contramate.llm.base import BaseEmbeddingClient
 
 
 class OpenAIEmbeddingClient(BaseEmbeddingClient):
@@ -52,30 +50,12 @@ class OpenAIEmbeddingClient(BaseEmbeddingClient):
         """Get embedding model name, using default if not specified"""
         return model or self.default_embedding_model
 
-    def _create_embedding_response(self, response: Any) -> EmbeddingResponse:
-        """Convert OpenAI embedding response to standardized format"""
-        usage = response.usage
-        embeddings = [data.embedding for data in response.data]
-        
-        return EmbeddingResponse(
-            embeddings=embeddings,
-            model=response.model,
-            usage={
-                "prompt_tokens": usage.prompt_tokens if usage else 0,
-                "total_tokens": usage.total_tokens if usage else 0,
-            },
-            dimensions=len(embeddings[0]) if embeddings else 0,
-            metadata={
-                "object": response.object,
-            }
-        )
-
     def create_embeddings(
         self,
         texts: Union[str, List[str]],
         model: Optional[str] = None,
         **kwargs
-    ) -> EmbeddingResponse:
+    ):
         """
         Create embeddings for text input(s)
 
@@ -85,19 +65,19 @@ class OpenAIEmbeddingClient(BaseEmbeddingClient):
             **kwargs: Additional parameters for OpenAI API
 
         Returns:
-            EmbeddingResponse: Standardized embedding response
+            Native OpenAI CreateEmbeddingResponse object
         """
         try:
             # Ensure texts is a list
             input_texts = [texts] if isinstance(texts, str) else texts
-            
+
             response = self._sync_client.embeddings.create(
                 model=self._get_embedding_model(model),
                 input=input_texts,
                 **kwargs
             )
-            
-            return self._create_embedding_response(response)
+
+            return response
 
         except OpenAIError as e:
             logger.error(f"OpenAI API error in embedding creation: {e}")
@@ -111,7 +91,7 @@ class OpenAIEmbeddingClient(BaseEmbeddingClient):
         texts: Union[str, List[str]],
         model: Optional[str] = None,
         **kwargs
-    ) -> EmbeddingResponse:
+    ):
         """
         Create embeddings for text input(s) asynchronously
 
@@ -121,19 +101,19 @@ class OpenAIEmbeddingClient(BaseEmbeddingClient):
             **kwargs: Additional parameters for OpenAI API
 
         Returns:
-            EmbeddingResponse: Standardized embedding response
+            Native OpenAI CreateEmbeddingResponse object
         """
         try:
             # Ensure texts is a list
             input_texts = [texts] if isinstance(texts, str) else texts
-            
+
             response = await self._async_client.embeddings.create(
                 model=self._get_embedding_model(model),
                 input=input_texts,
                 **kwargs
             )
-            
-            return self._create_embedding_response(response)
+
+            return response
 
         except OpenAIError as e:
             logger.error(f"OpenAI API error in async embedding creation: {e}")
@@ -147,6 +127,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def test_embedding_client():
+        """Test OpenAI embedding client with native response objects"""
         client = OpenAIEmbeddingClient()
 
         test_texts = [
@@ -154,19 +135,32 @@ if __name__ == "__main__":
             "Another test sentence to embed."
         ]
 
+        print("=" * 60)
+        print("Testing OpenAI Embedding Client")
+        print("=" * 60)
+
         # Test sync
-        print("Testing sync embedding creation...")
+        print("\n1. Testing sync embedding creation...")
         response = client.create_embeddings(test_texts)
-        print(f"Sync response: {len(response.embeddings)} embeddings, {response.dimensions} dimensions")
+        print(f"✓ Sync embeddings: {len(response.data)} embeddings created")
+        print(f"  Model: {response.model}")
+        print(f"  Dimensions: {len(response.data[0].embedding)}")
+        print(f"  Usage: {response.usage.total_tokens} tokens")
 
         # Test async
-        print("Testing async embedding creation...")
+        print("\n2. Testing async embedding creation...")
         async_response = await client.async_create_embeddings(test_texts)
-        print(f"Async response: {len(async_response.embeddings)} embeddings, {async_response.dimensions} dimensions")
+        print(f"✓ Async embeddings: {len(async_response.data)} embeddings created")
+        print(f"  Dimensions: {len(async_response.data[0].embedding)}")
 
         # Test single string
-        print("Testing single string embedding...")
+        print("\n3. Testing single string embedding...")
         single_response = client.create_embeddings("Single test sentence.")
-        print(f"Single response: {len(single_response.embeddings)} embeddings, {single_response.dimensions} dimensions")
+        print(f"✓ Single embedding: {len(single_response.data)} embedding created")
+        print(f"  Dimensions: {len(single_response.data[0].embedding)}")
+
+        print("\n" + "=" * 60)
+        print("Testing complete!")
+        print("=" * 60)
 
     asyncio.run(test_embedding_client())

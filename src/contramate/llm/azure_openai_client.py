@@ -1,61 +1,121 @@
-from typing import List, Dict, Any, Optional, Union
-import logging
+from typing import List, Dict, Any, Optional, Union, Callable
+from loguru import logger
 from openai import AzureOpenAI, AsyncAzureOpenAI
 from openai import OpenAIError
 
-from contramate.utils.settings.factory import settings_factory
 from contramate.utils.auth.certificate_provider import get_cert_token_provider
-from contramate.llm.base import BaseChatClient, ChatMessage, ChatResponse
-
-logger = logging.getLogger(__name__)
+from contramate.utils.settings.core import AOAICertSettings
+from contramate.llm.base import BaseChatClient, ChatMessage
 
 
 class AzureOpenAIChatClient(BaseChatClient):
-    """Azure OpenAI chat completion client with certificate-based authentication"""
+    """
+    Azure OpenAI chat completion client with multiple authentication methods.
 
-    def __init__(self, azure_settings: Optional[object] = None):
+    Supports authentication in priority order:
+    1. AOAICertSettings object (certificate-based)
+    2. Azure AD token provider
+    3. API key
+    """
+
+    def __init__(
+        self,
+        azure_endpoint: Optional[str] = None,
+        api_version: str = "2023-05-15",
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        api_key: Optional[str] = None,
+        azure_ad_token_provider: Optional[Callable] = None,
+        azure_ad_cert_settings: Optional[AOAICertSettings] = None
+    ):
         """
-        Initialize Azure OpenAI chat client with certificate authentication
+        Initialize Azure OpenAI chat client with flexible authentication.
 
         Args:
-            azure_settings: Azure OpenAI settings (uses global settings if not provided)
+            azure_endpoint: Azure OpenAI endpoint URL (required unless azure_ad_cert_settings provided)
+            api_version: Azure OpenAI API version (default: "2023-05-15")
+            model: Default model for completions (uses azure_ad_cert_settings.model if provided)
+            temperature: Default temperature (uses azure_ad_cert_settings.temperature if provided)
+            max_tokens: Default max tokens (uses azure_ad_cert_settings.max_tokens if provided)
+            api_key: API key for authentication (3rd priority)
+            azure_ad_token_provider: Azure AD token provider callable (2nd priority)
+            azure_ad_cert_settings: AOAICertSettings object (highest priority)
+
+        Raises:
+            ValueError: If required configuration is missing or no valid authentication method provided
         """
-        self.azure_settings = azure_settings or settings.azure_openai
-        
         # Initialize base client
         super().__init__()
-        
-        self.default_model = self.azure_settings.model
-        self.default_temperature = self.azure_settings.temperature
-        self.default_max_tokens = self.azure_settings.max_tokens
 
-        # Validate required configuration
-        if not self.azure_settings.tenant_id:
-            raise ValueError("Azure tenant ID is required. Set AZURE_OPENAI_TENANT_ID in environment.")
-        
-        if not self.azure_settings.client_id:
-            raise ValueError("Azure client ID is required. Set AZURE_OPENAI_CLIENT_ID in environment.")
-        
-        if not self.azure_settings.azure_endpoint:
-            raise ValueError("Azure endpoint is required. Set AZURE_OPENAI_AZURE_ENDPOINT in environment.")
+        # Priority 1: Use AOAICertSettings if provided
+        if azure_ad_cert_settings:
+            logger.info("Initializing with AOAICertSettings (certificate-based auth)")
+            self.azure_endpoint = azure_ad_cert_settings.azure_endpoint
+            self.api_version = azure_ad_cert_settings.api_version
+            self.default_model = model or azure_ad_cert_settings.model
+            self.default_temperature = temperature if temperature is not None else azure_ad_cert_settings.temperature
+            self.default_max_tokens = max_tokens if max_tokens is not None else azure_ad_cert_settings.max_tokens
 
-        # Get certificate-based token provider
-        try:
-            self.token_provider = get_cert_token_provider(self.azure_settings)
-        except Exception as e:
-            logger.error(f"Failed to initialize certificate token provider: {e}")
-            raise
+            # Get certificate-based token provider
+            try:
+                token_provider = get_cert_token_provider(azure_ad_cert_settings)
+                client_config = {
+                    "azure_endpoint": self.azure_endpoint,
+                    "api_version": self.api_version,
+                    "azure_ad_token_provider": token_provider
+                }
+            except Exception as e:
+                logger.error(f"Failed to initialize certificate token provider: {e}")
+                raise
+
+        # Priority 2: Use provided azure_ad_token_provider
+        elif azure_ad_token_provider:
+            logger.info("Initializing with provided Azure AD token provider")
+            if not azure_endpoint:
+                raise ValueError("azure_endpoint is required when using azure_ad_token_provider")
+
+            self.azure_endpoint = azure_endpoint
+            self.api_version = api_version
+            self.default_model = model or "gpt-4"
+            self.default_temperature = temperature if temperature is not None else 0.7
+            self.default_max_tokens = max_tokens if max_tokens is not None else 1000
+
+            client_config = {
+                "azure_endpoint": azure_endpoint,
+                "api_version": api_version,
+                "azure_ad_token_provider": azure_ad_token_provider
+            }
+
+        # Priority 3: Use API key
+        elif api_key:
+            logger.info("Initializing with API key authentication")
+            if not azure_endpoint:
+                raise ValueError("azure_endpoint is required when using api_key")
+
+            self.azure_endpoint = azure_endpoint
+            self.api_version = api_version
+            self.default_model = model or "gpt-4"
+            self.default_temperature = temperature if temperature is not None else 0.7
+            self.default_max_tokens = max_tokens if max_tokens is not None else 1000
+
+            client_config = {
+                "azure_endpoint": azure_endpoint,
+                "api_version": api_version,
+                "api_key": api_key
+            }
+
+        else:
+            raise ValueError(
+                "No valid authentication method provided. "
+                "Please provide one of: azure_ad_cert_settings, azure_ad_token_provider, or api_key"
+            )
 
         # Initialize Azure OpenAI clients
-        client_config = {
-            "azure_endpoint": self.azure_settings.azure_endpoint,
-            "api_version": self.azure_settings.api_version,
-            "azure_ad_token_provider": self.token_provider
-        }
-
         try:
             self._sync_client = AzureOpenAI(**client_config)
             self._async_client = AsyncAzureOpenAI(**client_config)
+            logger.info("Azure OpenAI clients initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize Azure OpenAI clients: {e}")
             raise
@@ -64,28 +124,13 @@ class AzureOpenAIChatClient(BaseChatClient):
         """Get model name, using default if not specified"""
         return model or self.default_model
 
-    def _create_response(self, response: Any) -> ChatResponse:
-        """Convert Azure OpenAI response to standardized format"""
-        choice = response.choices[0]
-        usage = response.usage
+    def _get_temperature(self, temperature: Optional[float] = None) -> float:
+        """Get temperature, using default if not specified"""
+        return temperature if temperature is not None else self.default_temperature
 
-        return ChatResponse(
-            content=choice.message.content or "",
-            model=response.model,
-            usage={
-                "prompt_tokens": usage.prompt_tokens if usage else 0,
-                "completion_tokens": usage.completion_tokens if usage else 0,
-                "total_tokens": usage.total_tokens if usage else 0,
-            },
-            response_id=response.id,
-            finish_reason=choice.finish_reason,
-            metadata={
-                "created": response.created,
-                "object": response.object,
-                "system_fingerprint": getattr(response, 'system_fingerprint', None),
-                "provider": "azure_openai"
-            }
-        )
+    def _get_max_tokens(self, max_tokens: Optional[int] = None) -> int:
+        """Get max tokens, using default if not specified"""
+        return max_tokens if max_tokens is not None else self.default_max_tokens
 
     def chat_completion(
         self,
@@ -94,7 +139,7 @@ class AzureOpenAIChatClient(BaseChatClient):
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs
-    ) -> ChatResponse:
+    ):
         """
         Synchronous chat completion
 
@@ -106,7 +151,7 @@ class AzureOpenAIChatClient(BaseChatClient):
             **kwargs: Additional parameters for Azure OpenAI API
 
         Returns:
-            ChatResponse: Standardized chat response
+            Native OpenAI ChatCompletion object
         """
         try:
             normalized_messages = self._normalize_messages(messages)
@@ -119,7 +164,7 @@ class AzureOpenAIChatClient(BaseChatClient):
                 **kwargs
             )
 
-            return self._create_response(response)
+            return response
 
         except OpenAIError as e:
             logger.error(f"Azure OpenAI API error: {e}")
@@ -135,7 +180,7 @@ class AzureOpenAIChatClient(BaseChatClient):
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs
-    ) -> ChatResponse:
+    ):
         """
         Asynchronous chat completion
 
@@ -147,7 +192,7 @@ class AzureOpenAIChatClient(BaseChatClient):
             **kwargs: Additional parameters for Azure OpenAI API
 
         Returns:
-            ChatResponse: Standardized chat response
+            Native OpenAI ChatCompletion object
         """
         try:
             normalized_messages = self._normalize_messages(messages)
@@ -160,7 +205,7 @@ class AzureOpenAIChatClient(BaseChatClient):
                 **kwargs
             )
 
-            return self._create_response(response)
+            return response
 
         except OpenAIError as e:
             logger.error(f"Azure OpenAI API error in async chat completion: {e}")
@@ -176,9 +221,9 @@ class AzureOpenAIChatClient(BaseChatClient):
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs
-    ) -> str:
+    ):
         """
-        Streaming chat completion (returns final content)
+        Streaming chat completion
 
         Args:
             messages: List of chat messages
@@ -188,7 +233,7 @@ class AzureOpenAIChatClient(BaseChatClient):
             **kwargs: Additional parameters for Azure OpenAI API
 
         Returns:
-            str: Complete response content
+            Generator yielding stream chunks
         """
         try:
             normalized_messages = self._normalize_messages(messages)
@@ -202,12 +247,7 @@ class AzureOpenAIChatClient(BaseChatClient):
                 **kwargs
             )
 
-            content_chunks = []
-            for chunk in response:
-                if chunk.choices[0].delta.content is not None:
-                    content_chunks.append(chunk.choices[0].delta.content)
-
-            return "".join(content_chunks)
+            return response
 
         except OpenAIError as e:
             logger.error(f"Azure OpenAI API error in streaming completion: {e}")
@@ -264,26 +304,89 @@ class AzureOpenAIChatClient(BaseChatClient):
 
 if __name__ == "__main__":
     import asyncio
+    import os
 
     async def test_azure_client():
+        """
+        Test Azure OpenAI client with different authentication methods.
+        Set environment variables to test each method.
+        """
+        test_messages = [
+            {"role": "user", "content": "Hello, this is a test message for Azure OpenAI."}
+        ]
+
+        print("=" * 60)
+        print("Testing Azure OpenAI Client with Multiple Auth Methods")
+        print("=" * 60)
+
+        # Method 1: Using AOAICertSettings (highest priority)
         try:
-            client = AzureOpenAIChatClient()
+            print("\n1. Testing with AOAICertSettings (certificate-based)...")
+            from contramate.utils.settings.factory import SettingsFactory
 
-            test_messages = [
-                {"role": "user", "content": "Hello, this is a test message for Azure OpenAI."}
-            ]
+            settings = SettingsFactory.create_azure_openai_settings()
+            client = AzureOpenAIChatClient(azure_ad_cert_settings=settings)
 
-            # Test sync
-            print("Testing sync completion...")
             response = client.chat_completion(test_messages)
-            print(f"Sync response: {response.content}")
-
-            # Test async
-            print("Testing async completion...")
-            async_response = await client.async_chat_completion(test_messages)
-            print(f"Async response: {async_response.content}")
-
+            print(f"✓ Certificate auth response: {response.choices[0].message.content[:100]}...")
         except Exception as e:
-            print(f"Test failed: {e}")
+            print(f"✗ Certificate auth failed: {e}")
+
+        # Method 2: Using API key
+        try:
+            print("\n2. Testing with API key authentication...")
+            api_key = os.getenv("AZURE_OPENAI_API_KEY")
+            endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+
+            if api_key and endpoint:
+                client = AzureOpenAIChatClient(
+                    azure_endpoint=endpoint,
+                    api_key=api_key,
+                    model="gpt-4"
+                )
+
+                response = client.chat_completion(test_messages)
+                print(f"✓ API key auth response: {response.choices[0].message.content[:100]}...")
+            else:
+                print("✗ API key auth skipped: Set AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT")
+        except Exception as e:
+            print(f"✗ API key auth failed: {e}")
+
+        # Method 3: Using custom Azure AD token provider
+        try:
+            print("\n3. Testing with custom Azure AD token provider...")
+            print("✗ Token provider auth skipped: Requires custom implementation")
+        except Exception as e:
+            print(f"✗ Token provider auth failed: {e}")
+
+        # Test async completion
+        try:
+            print("\n4. Testing async completion...")
+            settings = SettingsFactory.create_azure_openai_settings()
+            client = AzureOpenAIChatClient(azure_ad_cert_settings=settings)
+
+            async_response = await client.async_chat_completion(test_messages)
+            print(f"✓ Async response: {async_response.choices[0].message.content[:100]}...")
+        except Exception as e:
+            print(f"✗ Async completion failed: {e}")
+
+        # Test streaming
+        try:
+            print("\n5. Testing streaming completion...")
+            settings = SettingsFactory.create_azure_openai_settings()
+            client = AzureOpenAIChatClient(azure_ad_cert_settings=settings)
+
+            stream = client.stream_completion(test_messages)
+            print("✓ Stream response: ", end="")
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    print(chunk.choices[0].delta.content, end="", flush=True)
+            print()
+        except Exception as e:
+            print(f"✗ Streaming failed: {e}")
+
+        print("\n" + "=" * 60)
+        print("Testing complete!")
+        print("=" * 60)
 
     asyncio.run(test_azure_client())

@@ -7,7 +7,7 @@ from loguru import logger
 
 from contramate.dbs.interfaces.vector_store import VectorDBABC
 from contramate.utils.settings.core import OpenSearchSettings
-from contramate.llm import OpenAIEmbeddingClient, LiteLLMEmbeddingClient, AzureOpenAIEmbeddingClient, BaseEmbeddingClient
+from contramate.llm import BaseEmbeddingClient, create_default_embedding_client
 
 
 class OpenSearchContractAdapter(VectorDBABC):
@@ -50,28 +50,23 @@ class OpenSearchContractAdapter(VectorDBABC):
         self._ensure_index_exists()
 
     def _get_default_embedding_client(self) -> BaseEmbeddingClient:
-        """Get default embedding client based on available settings"""
+        """Get default embedding client using factory"""
         try:
-            # Try OpenAI first (most common)
-            from contramate.utils.settings.core import settings
-            if settings.openai.api_key:
-                return OpenAIEmbeddingClient()
-        except Exception:
-            pass
+            # Use factory to create default embedding client (tries OpenAI first)
+            return create_default_embedding_client(client_type="openai")
+        except Exception as e:
+            logger.warning(f"Failed to create OpenAI embedding client: {e}")
 
         try:
-            # Try Azure OpenAI with certificate auth
-            return AzureOpenAIEmbeddingClient()
-        except Exception:
-            pass
+            # Try Azure OpenAI as fallback
+            return create_default_embedding_client(client_type="azure_openai")
+        except Exception as e:
+            logger.warning(f"Failed to create Azure OpenAI embedding client: {e}")
 
-        try:
-            # Try LiteLLM as fallback
-            return LiteLLMEmbeddingClient()
-        except Exception:
-            pass
-
-        raise ValueError("No valid embedding client could be initialized. Please configure OpenAI, Azure OpenAI, or LiteLLM settings.")
+        raise ValueError(
+            "No valid embedding client could be initialized. "
+            "Please configure OpenAI or Azure OpenAI settings with proper environment variables."
+        )
 
     def _ensure_index_exists(self) -> None:
         """Check that the index exists, raise error if it doesn't"""
@@ -126,7 +121,8 @@ class OpenSearchContractAdapter(VectorDBABC):
         if use_hybrid:
             try:
                 embedding_response = self.embedding_client.create_embeddings(query)
-                query_embedding = embedding_response.embeddings[0]
+                # Native OpenAI response has data[0].embedding
+                query_embedding = embedding_response.data[0].embedding
                 logger.info(f"Generated embedding for query: {query[:50]}...")
             except Exception as e:
                 logger.warning(f"Failed to generate embedding for query, falling back to text-only search: {e}")

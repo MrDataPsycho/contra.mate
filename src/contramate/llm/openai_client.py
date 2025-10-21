@@ -1,13 +1,11 @@
 from typing import List, Dict, Any, Optional, Union
-import logging
+from loguru import logger
 from openai import OpenAI, AsyncOpenAI
 from openai import OpenAIError
 
 from contramate.utils.settings.core import OpenAISettings
 from contramate.utils.settings.factory import settings_factory
-from contramate.llm.base import BaseChatClient, ChatMessage, ChatResponse
-
-logger = logging.getLogger(__name__)
+from contramate.llm.base import BaseChatClient, ChatMessage
 
 
 class OpenAIChatClient(BaseChatClient):
@@ -56,27 +54,13 @@ class OpenAIChatClient(BaseChatClient):
         """Get model name, using default if not specified"""
         return model or self.default_model
 
-    def _create_response(self, response: Any) -> ChatResponse:
-        """Convert OpenAI response to standardized format"""
-        choice = response.choices[0]
-        usage = response.usage
+    def _get_temperature(self, temperature: Optional[float] = None) -> float:
+        """Get temperature, using default if not specified"""
+        return temperature if temperature is not None else self.default_temperature
 
-        return ChatResponse(
-            content=choice.message.content or "",
-            model=response.model,
-            usage={
-                "prompt_tokens": usage.prompt_tokens if usage else 0,
-                "completion_tokens": usage.completion_tokens if usage else 0,
-                "total_tokens": usage.total_tokens if usage else 0,
-            },
-            response_id=response.id,
-            finish_reason=choice.finish_reason,
-            metadata={
-                "created": response.created,
-                "object": response.object,
-                "system_fingerprint": getattr(response, 'system_fingerprint', None)
-            }
-        )
+    def _get_max_tokens(self, max_tokens: Optional[int] = None) -> int:
+        """Get max tokens, using default if not specified"""
+        return max_tokens if max_tokens is not None else self.default_max_tokens
 
     def chat_completion(
         self,
@@ -85,7 +69,7 @@ class OpenAIChatClient(BaseChatClient):
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs
-    ) -> ChatResponse:
+    ):
         """
         Synchronous chat completion
 
@@ -97,7 +81,7 @@ class OpenAIChatClient(BaseChatClient):
             **kwargs: Additional parameters for OpenAI API
 
         Returns:
-            ChatResponse: Standardized response
+            Native OpenAI ChatCompletion object
         """
         try:
             normalized_messages = self._normalize_messages(messages)
@@ -110,7 +94,7 @@ class OpenAIChatClient(BaseChatClient):
                 **kwargs
             )
 
-            return self._create_response(response)
+            return response
 
         except OpenAIError as e:
             logger.error(f"OpenAI API error: {e}")
@@ -126,7 +110,7 @@ class OpenAIChatClient(BaseChatClient):
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs
-    ) -> ChatResponse:
+    ):
         """
         Asynchronous chat completion
 
@@ -138,7 +122,7 @@ class OpenAIChatClient(BaseChatClient):
             **kwargs: Additional parameters for OpenAI API
 
         Returns:
-            ChatResponse: Standardized response
+            Native OpenAI ChatCompletion object
         """
         try:
             normalized_messages = self._normalize_messages(messages)
@@ -151,7 +135,7 @@ class OpenAIChatClient(BaseChatClient):
                 **kwargs
             )
 
-            return self._create_response(response)
+            return response
 
         except OpenAIError as e:
             logger.error(f"OpenAI API error: {e}")
@@ -212,7 +196,7 @@ class OpenAIChatClient(BaseChatClient):
             max_tokens=max_tokens,
             **kwargs
         )
-        return response.content
+        return response.choices[0].message.content
 
     def select_tool(
         self,
@@ -264,20 +248,36 @@ if __name__ == "__main__":
     import asyncio
 
     async def test_client():
+        """Test OpenAI chat client with native response objects"""
         client = OpenAIChatClient()
 
         test_messages = [
             {"role": "user", "content": "Hello, this is a test message."}
         ]
 
+        print("=" * 60)
+        print("Testing OpenAI Chat Client")
+        print("=" * 60)
+
         # Test sync
-        print("Testing sync completion...")
+        print("\n1. Testing sync completion...")
         response = client.chat_completion(test_messages)
-        print(f"Sync response: {response.content}")
+        print(f"✓ Sync response: {response.choices[0].message.content[:100]}...")
+        print(f"  Model: {response.model}")
+        print(f"  Usage: {response.usage.total_tokens} tokens")
 
         # Test async
-        print("Testing async completion...")
+        print("\n2. Testing async completion...")
         async_response = await client.async_chat_completion(test_messages)
-        print(f"Async response: {async_response.content}")
+        print(f"✓ Async response: {async_response.choices[0].message.content[:100]}...")
+
+        # Test backward compatible chat method
+        print("\n3. Testing backward compatible chat() method...")
+        chat_response = client.chat(test_messages)
+        print(f"✓ Chat response: {chat_response[:100]}...")
+
+        print("\n" + "=" * 60)
+        print("Testing complete!")
+        print("=" * 60)
 
     asyncio.run(test_client())

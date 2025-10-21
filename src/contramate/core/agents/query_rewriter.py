@@ -1,7 +1,9 @@
 import logging
-from typing import Union
-from contramate.llm import OpenAIChatClient, LiteLLMChatClient
 import json
+from pydantic import BaseModel
+from pydantic_ai import Agent
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
 
 
 logger = logging.getLogger(__name__)
@@ -21,34 +23,5 @@ JSON template to use:
 }
 """
 
-class QueryRewriterAgent:
-    def __init__(self, client: Union[OpenAIChatClient, LiteLLMChatClient], system_prompt: str | None = None):
-        self.client = client
-        self.system_prompt = system_prompt if system_prompt else SYSTEM_PROMPT
-
-    def execute(self, input: str, conversation_history: list[dict[str, str]]) -> str:
-        logger.info("=== Entering Query Update Node ===")
-        if len(conversation_history) == 0:
-            logger.info("Query Update endpoint called with Initial User turn")
-        else:
-            logger.info(f"Query Update endpoint called with Intermediate User and Assistant turns: {len(conversation_history)}")
 
 
-        messages = [
-            {"role": "system", "content": self.system_prompt},
-            *conversation_history,
-            {"role": "user", "content": f"The user question to rewrite: '{input}'"},
-        ]
-
-        config = {"response_format": {"type": "json_object"}}
-        output = self.client.chat(messages, config=config, )
-        try:
-            updated_question = json.loads(output)["question"]
-            logger.info(f"Updated Query: {updated_question}")
-            return updated_question
-        except json.JSONDecodeError:
-            print("Error decoding JSON")
-        return input  # Return original input if JSON parsing fails
-    
-    def __call__(self, input: str, conversation_history: list[dict[str, str]] = None) -> str:
-        return self.execute(input, conversation_history or [])

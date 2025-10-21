@@ -104,6 +104,7 @@ class AppSettings(ABCBaseSettings):
     port: int = Field(default=8000, description="Application port")
     vector_dimension: int = Field(description="Vector dimension for embeddings (e.g., 1536 for text-embedding-3-small, 3072 for text-embedding-3-large)")
     default_index_name: str = Field(default="contracts-test", description="Default OpenSearch index name")
+    llm_provider: str = Field(default="openai", description="Default LLM provider: 'openai' or 'azure_openai'")
 
     model_config = ABCBaseSettings.model_config.copy()
     model_config["env_prefix"] = "APP_"

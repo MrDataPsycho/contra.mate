@@ -177,21 +177,118 @@ docker-compose up
 ## AI Client System
 
 ### Client Architecture
-**Location**: `src/contramate/utils/clients/ai/`
+**Location**: `src/contramate/llm/`
 
 The project implements a comprehensive AI client system with support for multiple providers and both chat and embedding capabilities:
 
 #### Client Features
 - **Unified Interface**: All clients inherit from `BaseChatClient` or `BaseEmbeddingClient`
+- **Native OpenAI Responses**: Returns native OpenAI SDK objects (not custom wrappers)
 - **Sync/Async Support**: Both synchronous and asynchronous operations
 - **Tool Calling**: Function calling capabilities for agent interactions via `select_tool()` method
-- **JSON Mode**: Structured response support via `config` parameter
+- **Vanilla Clients**: Auto-selection based on environment configuration
+- **No Singletons**: Dependency injection pattern throughout
 - **Backward Compatibility**: Simplified `chat()` method for existing agent code
 
+#### Quick Start - LLMVanillaClientFactory (Recommended for Pure OpenAI SDK)
+
+```python
+from contramate.llm import LLMVanillaClientFactory
+import asyncio
+
+# Create factory (auto-selects based on APP_LLM_PROVIDER)
+factory = LLMVanillaClientFactory()
+
+# Get sync client - ONE client for BOTH chat and embeddings!
+client = factory.get_default_client(async_mode=False)
+
+# Chat completion
+chat_response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello"}]
+)
+print(chat_response.choices[0].message.content)
+
+# Embeddings (same client!)
+embed_response = client.embeddings.create(
+    model="text-embedding-3-small",
+    input="Hello world"
+)
+print(embed_response.data[0].embedding[:5])
+
+# Get async client
+async_client = factory.get_default_client(async_mode=True)
+
+async def example():
+    # Chat
+    response = await async_client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": "Hello async!"}]
+    )
+    print(response.choices[0].message.content)
+
+    # Embeddings (same client!)
+    embeddings = await async_client.embeddings.create(
+        model="text-embedding-3-small",
+        input="Async embeddings"
+    )
+    print(embeddings.data[0].embedding[:5])
+
+asyncio.run(example())
+
+# Explicitly specify provider
+factory_openai = LLMVanillaClientFactory(provider="openai")
+factory_azure = LLMVanillaClientFactory(provider="azure_openai")
+```
+
+#### Alternative - Wrapper Clients (Simplified API)
+```python
+from contramate.llm import create_vanilla_chat_client, create_vanilla_embedding_client
+import asyncio
+
+# Set APP_LLM_PROVIDER=openai or APP_LLM_PROVIDER=azure_openai in .env
+
+# Chat client - auto-selects based on APP_LLM_PROVIDER
+# Single client supports BOTH sync and async operations!
+client = create_vanilla_chat_client()
+
+# Synchronous usage
+response = client.chat_completion([{"role": "user", "content": "Hello"}])
+print(response.choices[0].message.content)
+
+# Asynchronous usage (same client!)
+async def async_example():
+    async_response = await client.async_chat_completion([{"role": "user", "content": "Hello"}])
+    print(async_response.choices[0].message.content)
+
+asyncio.run(async_example())
+
+# Embedding client - also supports both sync and async
+embed_client = create_vanilla_embedding_client()
+
+# Sync
+embeddings = embed_client.create_embeddings("Hello world")
+print(embeddings.data[0].embedding)
+
+# Async (same client!)
+async def async_embed():
+    async_embeddings = await embed_client.async_create_embeddings("Hello world")
+    print(async_embeddings.data[0].embedding)
+
+asyncio.run(async_embed())
+```
+
 #### Authentication Methods
-- **OpenAI**: API key-based authentication
-- **Azure OpenAI**: Certificate-based authentication using `azure-identity`
-- **LiteLLM**: Supports both OpenAI API keys and Azure certificate tokens
+- **OpenAI**: API key-based authentication via `OPENAI_API_KEY`
+- **Azure OpenAI**: Multiple auth options (priority order):
+  1. Certificate-based via `AOAICertSettings` object
+  2. Custom Azure AD token provider
+  3. API key authentication
+
+#### Client Creation Methods
+1. **Vanilla Client** (Recommended): `create_vanilla_chat_client()` - Auto-selects based on `APP_LLM_PROVIDER`
+2. **Explicit Selection**: `create_default_chat_client(client_type="openai")` or `client_type="azure_openai"`
+3. **Direct Instantiation**: `OpenAIChatClient(...)` or `AzureOpenAIChatClient(...)` for custom config
 
 ### Multi-Agent System
 
@@ -211,11 +308,36 @@ The project implements a comprehensive AI client system with support for multipl
 ### Current Implementation Status
 
 #### ✅ Completed Components
-- **AI Client System**: Full implementation with OpenAI, LiteLLM, and Azure OpenAI support
+- **AI Client System**:
+  - Full implementation with OpenAI and Azure OpenAI support
+  - Native OpenAI response objects (no custom wrappers)
+  - Vanilla client creation with auto-provider selection
+  - Multiple authentication methods for Azure OpenAI
+  - Factory pattern with dependency injection (no singletons)
+  - Loguru logging throughout
 - **Agent Framework**: All four agents implemented with tool calling capabilities
-- **Settings System**: Complete configuration management with Azure support
+- **Settings System**: Complete configuration management with Azure support and factory pattern
 - **Tool Infrastructure**: Function calling framework ready for tool execution
-- **Docker & Dependencies**: LiteLLM version constrained to `1.40.0-1.50.0` to avoid build issues
+- **Docker & Dependencies**: All dependencies properly configured
+
+#### Environment Configuration
+```bash
+# Required: Choose your LLM provider
+APP_LLM_PROVIDER=openai  # or "azure_openai"
+
+# For OpenAI
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+
+# For Azure OpenAI (if using certificate auth)
+AZURE_OPENAI_TENANT_ID=...
+AZURE_OPENAI_CLIENT_ID=...
+AZURE_OPENAI_AZURE_ENDPOINT=...
+AZURE_OPENAI_MODEL=gpt-4
+AZURE_OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
+# Plus certificate keys...
+```
 
 #### 🚧 In Progress / Pending
 - **Database Models**: Contract metadata and summary models need implementation
