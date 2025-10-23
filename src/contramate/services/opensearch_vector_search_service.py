@@ -30,6 +30,7 @@ class SearchResult(BaseModel):
     project_id: str
     reference_doc_id: str
     document_title: str
+    display_name: Optional[str]
     content_source: ContentSource
     contract_type: Optional[str]
     content: str
@@ -50,12 +51,13 @@ class SearchResult(BaseModel):
         section_hierarchy = source.get("section_hierarchy")
         if isinstance(section_hierarchy, list):
             section_hierarchy = " > ".join(section_hierarchy) if section_hierarchy else None
-        
+
         return cls(
             record_id=source["record_id"],
             project_id=source["project_id"],
             reference_doc_id=source["reference_doc_id"],
             document_title=source["document_title"],
+            display_name=source.get("display_name"),
             content_source=ContentSource(source["content_source"]),
             contract_type=source.get("contract_type"),
             content=source["content"],
@@ -68,6 +70,40 @@ class SearchResult(BaseModel):
             score=hit.get("_score"),  # Use .get() to handle None when using sort
             created_at=source["created_at"]
         )
+
+    def to_llm_context(self) -> str:
+        """
+        Convert search result to LLM-friendly context format.
+
+        Returns:
+            Formatted string containing document metadata and content for LLM consumption
+        """
+        # Build metadata table
+        metadata_parts = []
+        metadata_parts.append("| Field | Value |")
+        metadata_parts.append("|-------|-------|")
+        metadata_parts.append(f"| Document | {self.display_name or self.document_title} |")
+
+        if self.contract_type:
+            metadata_parts.append(f"| Contract Type | {self.contract_type} |")
+
+        if self.section_hierarchy:
+            metadata_parts.append(f"| Section | {self.section_hierarchy} |")
+
+        metadata_table = "\n".join(metadata_parts)
+
+        # Build complete context
+        context_parts = [
+            metadata_table,
+            "",
+            "**Content:**",
+            "",
+            self.content,
+            "",
+            "---"
+        ]
+
+        return "\n".join(context_parts)
 
 
 class SearchResponse(BaseModel):
@@ -82,6 +118,42 @@ class SearchResponse(BaseModel):
     filters: Optional[Dict[str, Any]] = None
     semantic_weight: Optional[float] = None
     text_weight: Optional[float] = None
+
+    def to_llm_context(self) -> str:
+        """
+        Convert all search results to LLM-friendly context format.
+
+        Returns:
+            Formatted string containing all search results for LLM consumption
+        """
+        if not self.results:
+            return (
+                f"# Search Results for: {self.query}\n\n"
+                f"**No search results found.**\n\n"
+                f"The search query '{self.query}' did not return any results that matched the criteria. "
+                f"Consider:\n"
+                f"- Reformulating the query with different keywords\n"
+                f"- Broadening the search scope\n"
+                f"- Checking if the information exists in the available documents"
+            )
+
+        context_parts = [
+            f"# Search Results for: {self.query}",
+            f"**Total Results:** {len(self.results)} (of {self.total_results} total)",
+            f"**Search Type:** {self.search_type}",
+            "",
+            "---",
+            ""
+        ]
+
+        # Add each result's context
+        for idx, result in enumerate(self.results, 1):
+            context_parts.append(f"# Search Result {idx}")
+            context_parts.append("")
+            context_parts.append(result.to_llm_context())
+            context_parts.append("")
+
+        return "\n".join(context_parts)
 
 
 
@@ -175,7 +247,7 @@ class OpenSearchVectorSearchService:
             logger.info(f"🔍 Generating embedding for query: '{query[:50]}...'")
             try:
                 embedding_response = self.embedding_client.create_embeddings(query)
-                query_vector = embedding_response.embeddings[0]  # Get first embedding
+                query_vector = embedding_response.data[0].embedding  # Get first embedding
             except Exception as e:
                 return Err(f"Failed to generate embedding: {str(e)}")
             logger.info(f"✅ Generated embedding vector with {len(query_vector)} dimensions")
@@ -377,7 +449,7 @@ class OpenSearchVectorSearchService:
             logger.info(f"🔍 Performing hybrid search for: '{query[:50]}...'")
             try:
                 embedding_response = self.embedding_client.create_embeddings(query)
-                query_vector = embedding_response.embeddings[0]  # Get first embedding
+                query_vector = embedding_response.data[0].embedding  # Get first embedding
             except Exception as e:
                 return Err(f"Failed to generate embedding for hybrid search: {str(e)}")
             logger.info(f"✅ Generated embedding vector with {len(query_vector)} dimensions")
@@ -689,21 +761,21 @@ class OpenSearchVectorSearchService:
     ) -> Result[SearchResponse, str]:
         """
         Retrieve all chunks from a specific document within a project.
-        
+
         Args:
             project_id: Project ID to filter by
             reference_doc_id: Reference document ID to retrieve chunks from
             size: Optional maximum number of results to return (if None, returns all chunks)
-            
+
         Returns:
             Result[SearchResponse, str]: Ok with all document chunks, Err with error message
         """
         try:
             start_time = time.time()
-            
+
             # Build excludes
             excludes = ["vector"]  # Always exclude vector fields
-            
+
             # Build query to get all chunks from the specific document
             search_query = {
                 "query": {
@@ -729,25 +801,25 @@ class OpenSearchVectorSearchService:
                     {"chunk_index": {"order": "asc"}}  # Sort by chunk_index to maintain order
                 ]
             }
-            
+
             # Set size if provided, otherwise use default large size to get all chunks
             if size is not None:
                 search_query["size"] = size
             else:
                 search_query["size"] = 10000  # Large number to get all chunks
-            
+
             # Execute search
             response = self.client.search(index=self.index_name, body=search_query)
-            
+
             # Process results
             search_results = []
             for hit in response["hits"]["hits"]:
                 search_result = SearchResult.from_opensearch_hit(hit)
                 search_results.append(search_result)
-            
+
             execution_time = (time.time() - start_time) * 1000  # Convert to milliseconds
             logger.info(f"✅ Retrieved {len(search_results)} chunks from document {reference_doc_id} in project {project_id}")
-            
+
             search_response = SearchResponse(
                 results=search_results,
                 total_results=response["hits"]["total"]["value"],
@@ -757,11 +829,211 @@ class OpenSearchVectorSearchService:
                 size=size or len(search_results),
                 filters={"project_id": [project_id], "reference_doc_id": [reference_doc_id]}
             )
-            
+
             return Ok(search_response)
-            
+
         except Exception as e:
             error_msg = f"Error retrieving chunks for document {reference_doc_id} in project {project_id}: {str(e)}"
+            logger.error(f"❌ {error_msg}")
+            return Err(error_msg)
+
+    async def hybrid_search_multi_document(
+        self,
+        query: str,
+        size: int = 10,
+        semantic_weight: float = 0.7,
+        text_weight: float = 0.3,
+        min_score: float = 0.5,
+        fields: Optional[List[str]] = None,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> Result[List[SearchResponse], str]:
+        """
+        Perform hybrid search across multiple documents efficiently by creating embedding once.
+
+        This method is optimized for multi-document comparison queries where the same search
+        query needs to be executed across multiple filtered documents. It generates the
+        embedding vector once and reuses it for all document searches.
+
+        IMPORTANT: This method requires filters with "documents" key containing a list of
+        document filter dictionaries. This follows the global filter structure used across
+        all search methods.
+
+        Args:
+            query: Text to search for (embedding generated once)
+            size: Number of results to return per document (default: 10)
+            semantic_weight: Weight for semantic search results (default: 0.7)
+            text_weight: Weight for text search results (default: 0.3)
+            min_score: Minimum combined score threshold (default: 0.5)
+            fields: Fields to search in for text search
+            filters: Filter dictionary with "documents" key containing list of document dicts.
+                Each document dict must have:
+                - project_id: Project ID
+                - reference_doc_id: Reference document ID
+
+        Returns:
+            Result[List[SearchResponse], str]: Ok with list of search responses (one per document),
+            Err with error message
+
+        Example:
+            >>> filters = {
+            ...     "documents": [
+            ...         {"project_id": "proj1", "reference_doc_id": "doc1"},
+            ...         {"project_id": "proj2", "reference_doc_id": "doc2"},
+            ...         {"project_id": "proj3", "reference_doc_id": "doc3"},
+            ...     ]
+            ... }
+            >>> result = await service.hybrid_search_multi_document(
+            ...     query="liability limitations",
+            ...     filters=filters,
+            ...     size=5
+            ... )
+        """
+        import asyncio
+
+        start_time = time.time()
+
+        try:
+            # Validate filters structure
+            if not filters or "documents" not in filters:
+                return Err("filters parameter must contain 'documents' key with list of document filters")
+
+            document_filters = filters.get("documents", [])
+            if not document_filters or len(document_filters) == 0:
+                return Err("filters['documents'] must contain at least one document filter")
+
+            # Generate embedding ONCE for the query
+            logger.info(f"🔍 Generating embedding once for multi-document search: '{query[:50]}...'")
+            try:
+                embedding_response = self.embedding_client.create_embeddings(query)
+                query_vector = embedding_response.data[0].embedding
+            except Exception as e:
+                return Err(f"Failed to generate embedding for multi-document search: {str(e)}")
+
+            logger.info(f"✅ Generated embedding vector with {len(query_vector)} dimensions")
+            logger.info(f"🔍 Searching across {len(document_filters)} documents in parallel...")
+
+            # Set default fields if not provided
+            if not fields:
+                fields = ["content^2", "section_hierarchy^1"]
+
+            # Build excludes
+            excludes = ["vector"]
+
+            async def search_single_document(doc_filter: Dict[str, str], doc_idx: int) -> SearchResponse:
+                """Search a single document using the pre-generated embedding."""
+                doc_start = time.time()
+
+                # Build the function_score query with document filter
+                search_query = {
+                    "size": size,
+                    "query": {
+                        "function_score": {
+                            "query": {
+                                "bool": {
+                                    "should": [
+                                        {
+                                            "multi_match": {
+                                                "query": query,
+                                                "fields": fields,
+                                                "type": "best_fields",
+                                                "fuzziness": "AUTO"
+                                            }
+                                        },
+                                        {
+                                            "knn": {
+                                                "vector": {
+                                                    "vector": query_vector,
+                                                    "k": size * 2
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "minimum_should_match": 1,
+                                    "filter": [
+                                        {"term": {"project_id": doc_filter["project_id"]}},
+                                        {"term": {"reference_doc_id": doc_filter["reference_doc_id"]}}
+                                    ]
+                                }
+                            },
+                            "functions": [
+                                {
+                                    "filter": {"exists": {"field": "content"}},
+                                    "weight": text_weight
+                                },
+                                {
+                                    "filter": {"exists": {"field": "vector"}},
+                                    "weight": semantic_weight
+                                }
+                            ],
+                            "score_mode": "sum",
+                            "boost_mode": "sum"
+                        }
+                    },
+                    "_source": {
+                        "excludes": excludes
+                    },
+                    "highlight": {
+                        "fields": {
+                            "content": {"fragment_size": 150, "number_of_fragments": 2},
+                            "section_hierarchy": {"fragment_size": 100, "number_of_fragments": 1}
+                        }
+                    }
+                }
+
+                # Execute search (run in executor to avoid blocking)
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: self.client.search(index=self.index_name, body=search_query)
+                )
+
+                # Process results
+                search_results = []
+                for hit in response["hits"]["hits"]:
+                    score = hit["_score"]
+                    if score >= min_score:
+                        search_result = SearchResult.from_opensearch_hit(hit)
+                        search_results.append(search_result)
+
+                doc_execution_time = (time.time() - doc_start) * 1000
+
+                logger.info(
+                    f"  ✓ Document {doc_idx}: {len(search_results)} results "
+                    f"(project: {doc_filter['project_id'][:8]}..., "
+                    f"doc: {doc_filter['reference_doc_id'][:8]}..., "
+                    f"time: {doc_execution_time:.0f}ms)"
+                )
+
+                return SearchResponse(
+                    results=search_results,
+                    total_results=response["hits"]["total"]["value"],
+                    search_type="hybrid_multi_doc",
+                    query=query,
+                    execution_time_ms=doc_execution_time,
+                    size=size,
+                    min_score=min_score,
+                    filters={"documents": [doc_filter]},  # Keep global filter structure
+                    semantic_weight=semantic_weight,
+                    text_weight=text_weight
+                )
+
+            # Search all documents in parallel
+            search_tasks = [
+                search_single_document(doc_filter, idx)
+                for idx, doc_filter in enumerate(document_filters, 1)
+            ]
+            results = await asyncio.gather(*search_tasks)
+
+            total_time = (time.time() - start_time) * 1000
+            logger.info(
+                f"✅ Multi-document search completed: {len(results)} documents searched "
+                f"in {total_time:.0f}ms (avg {total_time/len(results):.0f}ms per doc)"
+            )
+
+            return Ok(results)
+
+        except Exception as e:
+            error_msg = f"Error performing multi-document hybrid search: {str(e)}"
             logger.error(f"❌ {error_msg}")
             return Err(error_msg)
 

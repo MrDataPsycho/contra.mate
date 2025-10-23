@@ -32,6 +32,11 @@ from contramate.models.filters import (
     OpenSearchFilter,
 )
 
+from contramate.models.messages import (
+    OpenAIMessage,
+    MessageHistory,
+)
+
 __all__ = [
     "DocumentInfo",
     "Chunk",
@@ -44,4 +49,6 @@ __all__ = [
     "GoldModel",
     "DocumentFilter",
     "OpenSearchFilter",
+    "OpenAIMessage",
+    "MessageHistory",
 ]

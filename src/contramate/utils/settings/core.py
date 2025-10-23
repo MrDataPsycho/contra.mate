@@ -62,10 +62,11 @@ class OpenSearchSettings(ABCBaseSettings):
 class OpenAISettings(ABCBaseSettings):
     """OpenAI API settings"""
     api_key: str | None = Field(default=None, description="OpenAI API key")
-    model: str = Field(default="gpt-5-mini", description="Default OpenAI model")
+    model: str = Field(..., description="Default OpenAI model")
     embedding_model: str = Field(..., description="OpenAI embedding model (required, must be set in env)")
-    temperature: float = Field(default=0.7, description="Default temperature for completions")
-    max_tokens: int = Field(default=1000, description="Default max tokens for completions")
+    temperature: float = Field(default=0.0, description="Default temperature for completions (0.0 for deterministic)")
+    max_tokens: int = Field(default=4096, description="Default max tokens for completions")
+    seed: int = Field(default=42, description="Random seed for reproducibility")
     base_url: str | None = Field(default=None, description="Custom OpenAI API base URL")
 
     model_config = ABCBaseSettings.model_config.copy()
@@ -81,10 +82,11 @@ class AOAICertSettings(ABCBaseSettings):
     private_cert_key: str = Field(description="Private certificate key content")
     azure_endpoint: str = Field(description="Azure OpenAI endpoint URL")
     api_version: str = Field(default="2023-05-15", description="Azure OpenAI API version")
-    model: str = Field(default="gpt-4", description="Default Azure OpenAI model")
+    model: str = Field(..., description="Default Azure OpenAI model")
     embedding_model: str = Field(..., description="Azure OpenAI embedding model (required, must be set in env)")
-    temperature: float = Field(default=0.7, description="Default temperature for completions")
-    max_tokens: int = Field(default=1000, description="Default max tokens for completions")
+    temperature: float = Field(default=0.0, description="Default temperature for completions (0.0 for deterministic)")
+    max_tokens: int = Field(default=4096, description="Default max tokens for completions")
+    seed: int = Field(default=42, description="Random seed for reproducibility")
 
     model_config = ABCBaseSettings.model_config.copy()
     model_config["env_prefix"] = "AZURE_OPENAI_"
