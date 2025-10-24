@@ -587,15 +587,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#production-readiness-assessment" class="md-nav__link">
-    <span class="md-ellipsis">
-      Production Readiness Assessment
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -671,15 +662,6 @@
   <a href="#11-future-roadmap" class="md-nav__link">
     <span class="md-ellipsis">
       11. Future Roadmap
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-lessons-learned" class="md-nav__link">
-    <span class="md-ellipsis">
-      12. Lessons Learned
     </span>
   </a>
   
@@ -1153,15 +1135,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#production-readiness-assessment" class="md-nav__link">
-    <span class="md-ellipsis">
-      Production Readiness Assessment
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1237,15 +1210,6 @@
   <a href="#11-future-roadmap" class="md-nav__link">
     <span class="md-ellipsis">
       11. Future Roadmap
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-lessons-learned" class="md-nav__link">
-    <span class="md-ellipsis">
-      12. Lessons Learned
     </span>
   </a>
   
@@ -1526,16 +1490,16 @@
 <td>Contextualizes queries with history, expands ambiguous questions</td>
 </tr>
 <tr>
-<td><strong>Tool Executor</strong></td>
-<td>Selects tools via function calling, executes searches</td>
-</tr>
-<tr>
 <td><strong>Talk To Contract</strong></td>
 <td>Core Q&amp;A engine, hybrid search, citation generation, retry logic</td>
 </tr>
 <tr>
 <td><strong>Answer Critique</strong></td>
 <td>Evaluates quality, suggests improvements, validates citations</td>
+</tr>
+<tr>
+<td><strong>Metadata Insights</strong></td>
+<td>Analyzes document metadata, identifies key attributes, suggests improvements</td>
 </tr>
 </tbody>
 </table>
@@ -1570,8 +1534,7 @@
 <h3 id="backend-technologies">Backend Technologies<a class="headerlink" href="#backend-technologies" title="Permanent link">&para;</a></h3>
 <p><strong>Core Framework</strong>
 - <strong>Python 3.12</strong> - Main programming language
-- <strong>FastAPI</strong> - High-performance REST API framework
-- <strong>Uvicorn</strong> - ASGI server with async support</p>
+- <strong>FastAPI</strong> - High-performance REST API framework</p>
 <h3 id="technology-stack-summary">Technology Stack Summary<a class="headerlink" href="#technology-stack-summary" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1602,82 +1565,11 @@
 <td>Streamlit 1.40 (current), Next.js 15 + TypeScript + Tailwind v4 (future)</td>
 </tr>
 <tr>
-<td><strong>Package Mgmt</strong></td>
-<td>uv (Python), pnpm (Node.js)</td>
-</tr>
-<tr>
 <td><strong>Infrastructure</strong></td>
 <td>Docker Compose, Clean Architecture (API → Services → Adapters → Agents)</td>
 </tr>
-<tr>
-<td><strong>Ports</strong></td>
-<td>FastAPI:8000, Streamlit:8501, Postgres:5432, Dynamo:8001, OpenSearch:9200</td>
-</tr>
 </tbody>
 </table>
-<h3 id="production-readiness-assessment">Production Readiness Assessment<a class="headerlink" href="#production-readiness-assessment" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Category</th>
-<th>Score</th>
-<th>Priority</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Security &amp; Authentication</td>
-<td>3/10</td>
-<td>🔴 HIGH</td>
-</tr>
-<tr>
-<td>Error Handling &amp; Logging</td>
-<td>6/10</td>
-<td>🟡 MEDIUM</td>
-</tr>
-<tr>
-<td>Performance &amp; Scalability</td>
-<td>5/10</td>
-<td>🔴 HIGH</td>
-</tr>
-<tr>
-<td>Testing &amp; QA</td>
-<td>4/10</td>
-<td>🔴 HIGH</td>
-</tr>
-<tr>
-<td>Monitoring &amp; Observability</td>
-<td>2/10</td>
-<td>🟡 MEDIUM</td>
-</tr>
-<tr>
-<td>Data Management &amp; Backup</td>
-<td>4/10</td>
-<td>🔴 HIGH</td>
-</tr>
-<tr>
-<td>API Design &amp; Documentation</td>
-<td>7/10</td>
-<td>🟢 LOW</td>
-</tr>
-<tr>
-<td>Deployment &amp; Infrastructure</td>
-<td>5/10</td>
-<td>🟡 MEDIUM</td>
-</tr>
-<tr>
-<td>User Experience &amp; Frontend</td>
-<td>6/10</td>
-<td>🟡 MEDIUM</td>
-</tr>
-<tr>
-<td>Compliance &amp; Privacy</td>
-<td>2/10</td>
-<td>🔴 HIGH</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Status:</strong> Prototype/MVP Ready ✅ | Production Ready: ❌ (6-9 months hardening needed)</p>
 <hr />
 <h2 id="8-demonstration-flow">8. Demonstration Flow<a class="headerlink" href="#8-demonstration-flow" title="Permanent link">&para;</a></h2>
 <table>
@@ -1844,46 +1736,6 @@
 </tbody>
 </table>
 <hr />
-<h2 id="12-lessons-learned">12. Lessons Learned<a class="headerlink" href="#12-lessons-learned" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Lesson</th>
-<th>Insight</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Validate LLM Outputs</strong></td>
-<td>Non-deterministic failures require retry logic with exponential backoff</td>
-</tr>
-<tr>
-<td><strong>Hybrid Search Wins</strong></td>
-<td>kNN + BM25 (70/30 split) outperforms semantic-only search</td>
-</tr>
-<tr>
-<td><strong>History Management</strong></td>
-<td>Conversational context critical but can break structured outputs</td>
-</tr>
-<tr>
-<td><strong>Citation Trust</strong></td>
-<td>Source attribution non-negotiable; validate to prevent hallucinations</td>
-</tr>
-<tr>
-<td><strong>Clean Architecture</strong></td>
-<td>Result types, factories, layer separation enable rapid iteration</td>
-</tr>
-<tr>
-<td><strong>Docker Deployment</strong></td>
-<td><code>docker-compose up</code> simplifies multi-service orchestration</td>
-</tr>
-<tr>
-<td><strong>UX Details</strong></td>
-<td>Response time, context visibility, expandable sections build trust</td>
-</tr>
-</tbody>
-</table>
-<hr />
 <h2 id="13-conclusion">13. Conclusion<a class="headerlink" href="#13-conclusion" title="Permanent link">&para;</a></h2>
 <h3 id="key-achievements">Key Achievements<a class="headerlink" href="#key-achievements" title="Permanent link">&para;</a></h3>
 <table>
@@ -1932,15 +1784,15 @@
 <tbody>
 <tr>
 <td><strong>GitHub Repository</strong></td>
-<td><a href="https://github.com/MrDataPsycho/contra.mate">github.com/MrDataPsycho/contra.mate</a></td>
+<td><a href="https://github.com/MrDataPsycho/contra.mate">https://github.com/MrDataPsycho/contra.mate</a></td>
 </tr>
 <tr>
 <td><strong>LinkedIn</strong></td>
-<td><a href="https://www.linkedin.com/in/mr-data-psycho/">linkedin.com/in/sheikh-alam-data</a></td>
+<td><a href="https://www.linkedin.com/in/mr-data-psycho/">https://www.linkedin.com/in/mr-data-psycho/</a></td>
 </tr>
 <tr>
 <td><strong>Documentation</strong></td>
-<td><a href="https://mrdatapsycho.github.io/contra.mate/">mrdatapsycho.github.io/contra.mate</a></td>
+<td><a href="https://mrdatapsycho.github.io/contra.mate/">https://mrdatapsycho.github.io/contra.mate</a></td>
 </tr>
 </tbody>
 </table>
