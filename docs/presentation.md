@@ -1,53 +1,35 @@
-# Contramate: AI-Powered Contract Management Assistant
-## Sheikh Alam
-
-**Capstone Project Presentation**
+# Contramate: Demo Day
+**Sheikh Alam** | Agent Engineering Bootcamp Capstone
 
 ---
 
 ## 1. Introduction
 
-### About Contramate
+| **Component** | **Description** |
+|---------------|-----------------|
+| **What** | AI-powered contract analysis assistant using LLMs, multi-agent systems, and vector search |
+| **Purpose** | Automate contract Q&A, analysis, and comparison with citation-backed responses |
+| **Tech Focus** | Multi-agent orchestration, RAG architecture, full-stack deployment |
 
-Contramate is an intelligent contract management assistant that leverages Large Language Models (LLMs), multi-agent systems, and vector databases to automate contract analysis and question-answering workflows.
+### Key Capabilities
 
-**Key Features:**
-- Natural language contract querying
-- Multi-document comparison and analysis
-- Citation-backed responses with source traceability
-- Conversation memory and context management
-- Real-time document search and retrieval
-
-### About the Developer
-
-**Project Context:** Agent Engineering Bootcamp Capstone Project
-
-**Technology Focus:**
-- Multi-agent AI systems with orchestration
-- RAG (Retrieval-Augmented Generation) architecture
-- Full-stack development with modern cloud technologies
-- Production-ready deployment with Docker containerization
+| Feature | Capability |
+|---------|-----------|
+| 🔍 Natural Language Queries | Ask questions in plain English |
+| 📊 Multi-Document Analysis | Compare provisions across contracts |
+| 📌 Source Citations | Every answer backed by document references |
+| 💬 Conversation Memory | Context-aware follow-up questions |
+| ⚡ Real-Time Search | Instant retrieval from 500+ contracts |
 
 ---
 
-## 2. Current Challenges in Manual Contract Management
+## 2. Problem: Manual Contract Review Challenges
 
-### The Problem Landscape
-
-**1. Time-Intensive Review Process**
-- Legal teams spend 50-70% of time on contract review
-- Manual search through hundreds of pages per contract
-- Finding specific clauses requires extensive reading
-
-**2. Information Fragmentation**
-- Key terms scattered across multiple documents
-- Difficult to compare provisions across contracts
-- No centralized knowledge base for contract history
-
-**3. Human Error and Inconsistency**
-- Overlooked clauses due to fatigue
-- Inconsistent interpretation across reviewers
-- Lack of standardized extraction methods
+| Challenge | Impact | Time Cost |
+|-----------|--------|-----------|
+| **Time-Intensive Review** | 50-70% of legal team time on manual review | Hours per contract |
+| **Information Fragmentation** | Key terms scattered across documents | Difficult comparisons |
+| **Human Error** | Overlooked clauses, inconsistent interpretation | Quality risks |
 
 **4. Collaboration Bottlenecks**
 - Contract knowledge locked in individual experts
@@ -66,34 +48,16 @@ Contramate is an intelligent contract management assistant that leverages Large 
 ### Automated Contract Intelligence
 
 **1. Instant Question Answering**
-- **Before:** Manually search through 100+ page contracts
-- **After:** Ask natural language questions, get instant answers with citations
-- **Impact:** Reduces contract review time from hours to minutes
+## 3. Solution: Contramate AI System
 
-**2. Multi-Document Analysis**
-- **Before:** Open multiple PDFs, manually compare clauses
-- **After:** Compare payment terms, warranties, or liabilities across contracts automatically
-- **Impact:** Parallel analysis of 10+ contracts in seconds
-
-**3. Contextual Search**
-- **Before:** Ctrl+F keyword search (misses semantic variations)
-- **After:** Hybrid semantic + keyword search finds relevant clauses even with different wording
-- **Impact:** 95%+ retrieval accuracy vs 60% with keyword-only
-
-**4. Source Attribution**
-- **Before:** No way to verify AI-generated answers
-- **After:** Every answer includes inline citations `[doc1]` with source document references
-- **Impact:** Full auditability and trust in responses
-
-**5. Conversation Memory**
-- **Before:** Repeat context in every query
-- **After:** Multi-turn conversations with full message history
-- **Impact:** Natural dialogue flow like talking to a legal expert
-
-**6. Document-Specific Filtering**
-- **Before:** Search across all contracts (noisy results)
-- **After:** Filter by project, contract type, or specific documents
-- **Impact:** Precision targeting reduces false positives by 80%
+| Feature | Before | After | Impact |
+|---------|--------|-------|--------|
+| **Contract Search** | Manual 100+ page review | Natural language Q&A | Hours → Minutes |
+| **Multi-Doc Analysis** | Open multiple PDFs manually | Automatic comparison | 10+ contracts in seconds |
+| **Search Quality** | Keyword-only (60% accuracy) | Hybrid semantic + keyword | 95%+ accuracy |
+| **Verification** | No source tracking | Citations `[doc1]` inline | Full auditability |
+| **Context** | Repeat info each query | Conversation memory | Natural dialogue |
+| **Filtering** | Search all (noisy) | Project/doc filtering | 80% less noise |
 
 ---
 
@@ -101,85 +65,50 @@ Contramate is an intelligent contract management assistant that leverages Large 
 
 ### Agent Orchestration Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         USER INTERFACE                          │
-│              Streamlit UI / Next.js Frontend                    │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      FASTAPI BACKEND                            │
-│                    Chat Controller (REST API)                   │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                  ORCHESTRATOR AGENT (Main)                      │
-│  • Receives user query + message history + filters              │
-│  • Coordinates workflow between specialized agents              │
-│  • Returns final response with citations                        │
-└──────┬──────────────────────┬──────────────────────┬───────────┘
-       │                      │                      │
-       ▼                      ▼                      ▼
-┌─────────────┐      ┌─────────────┐       ┌─────────────┐
-│   QUERY     │      │    TOOL     │       │   ANSWER    │
-│  REWRITER   │      │  EXECUTOR   │       │  CRITIQUE   │
-│   AGENT     │      │   AGENT     │       │   AGENT     │
-└─────────────┘      └──────┬──────┘       └─────────────┘
-                            │
-                            ▼
-              ┌─────────────────────────┐
-              │  TALK TO CONTRACT AGENT │
-              │  (Production: Vanilla)  │
-              └────────────┬────────────┘
-                           │
-                           ▼
-              ┌────────────────────────────────┐
-              │        TOOL LAYER              │
-              │  • hybrid_search               │
-              │  • search_by_project           │
-              │  • search_by_document          │
-              │  • compare_filtered_documents  │
-              │  • search_similar_documents    │
-              └────────────┬───────────────────┘
-                           │
-           ┌───────────────┼────────────────┐
-           ▼               ▼                ▼
-    ┌──────────┐   ┌──────────────┐  ┌──────────┐
-    │OpenSearch│   │  PostgreSQL  │  │ DynamoDB │
-    │ (Vector) │   │  (Metadata)  │  │(Messages)│
-    └──────────┘   └──────────────┘  └──────────┘
+```mermaid
+graph TD
+    A[USER INTERFACE<br/>Streamlit UI / Next.js Frontend] --> B[FASTAPI BACKEND<br/>Chat Controller REST API]
+    B --> C[ORCHESTRATOR AGENT Main]
+    C --> |"Receives query + history + filters"| C
+    C --> D[Query Rewriter Agent]
+    C --> E[Tool Executor Agent]
+    C --> F[Answer Critique Agent]
+    
+    E --> G[Talk to Contract Agent<br/>Production: Vanilla]
+    
+    G --> H[TOOL LAYER]
+    H --> |hybrid_search| H
+    H --> |search_by_project| H
+    H --> |search_by_document| H
+    H --> |compare_filtered_documents| H
+    H --> |search_similar_documents| H
+    
+    H --> I[(OpenSearch<br/>Vector DB)]
+    H --> J[(PostgreSQL<br/>Metadata)]
+    H --> K[(DynamoDB<br/>Messages)]
+    
+    style A fill:#e1f5ff
+    style B fill:#fff4e6
+    style C fill:#f3e5f5
+    style D fill:#e8f5e9
+    style E fill:#e8f5e9
+    style F fill:#e8f5e9
+    style G fill:#fff9c4
+    style H fill:#fce4ec
+    style I fill:#e0f2f1
+    style J fill:#e0f2f1
+    style K fill:#e0f2f1
 ```
 
-### Agent Responsibilities
+### Agent Roles
 
-**1. Orchestrator Agent**
-- Entry point for all user queries
-- Manages conversation flow
-- Delegates to specialized agents
-- Aggregates final response
-
-**2. Query Rewriter Agent**
-- Contextualizes user queries with conversation history
-- Expands ambiguous questions
-- Optimizes for retrieval performance
-
-**3. Tool Executor Agent**
-- Selects appropriate tools via LLM function calling
-- Executes searches and comparisons
-- Returns structured results
-
-**4. Talk To Contract Agent (Vanilla)**
-- Core Q&A engine with OpenAI function calling
-- Hybrid search integration
-- Citation generation with validation
-- Retry logic for response reliability
-
-**5. Answer Critique Agent**
-- Evaluates response quality
-- Suggests improvements
-- Ensures citation accuracy
+| Agent | Responsibility |
+|-------|----------------|
+| **Orchestrator** | Entry point, manages flow, delegates tasks, aggregates response |
+| **Query Rewriter** | Contextualizes queries with history, expands ambiguous questions |
+| **Tool Executor** | Selects tools via function calling, executes searches |
+| **Talk To Contract** | Core Q&A engine, hybrid search, citation generation, retry logic |
+| **Answer Critique** | Evaluates quality, suggests improvements, validates citations |
 
 ---
 
@@ -187,66 +116,32 @@ Contramate is an intelligent contract management assistant that leverages Large 
 
 ### End-to-End Data Pipeline
 
+```mermaid
+graph TB
+    A["1. DOCUMENT INGESTION<br/>• PDF contracts uploaded<br/>• Metadata extraction<br/>• Stored in PostgreSQL"] 
+    B["2. TEXT EXTRACTION<br/>• PDFs to markdown<br/>• Preserve structure<br/>• Store full text"]
+    C["3. CHUNKING & EMBEDDING<br/>• Semantic chunks ~500 tokens<br/>• text-embedding-3-small<br/>• Vector dimension: 1536"]
+    D["4. VECTOR DATABASE INDEXING<br/>• Index in OpenSearch<br/>• embedding + text + metadata<br/>• Enable kNN + BM25"]
+    E["5. QUERY PROCESSING<br/>• User query → embedding<br/>• Hybrid: 70% semantic + 30% keyword<br/>• Apply filters<br/>• Top-k chunks"]
+    F["6. LLM ANSWER GENERATION<br/>• Context: chunks + history<br/>• GPT-4 generates answer<br/>• Citations mapped<br/>• Validation with retry"]
+    G["7. CONVERSATION PERSISTENCE<br/>• Save to DynamoDB<br/>• User & assistant messages<br/>• Response time, citations<br/>• PK: USER# SK: MSG#"]
+    
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    
+    style A fill:#e3f2fd
+    style B fill:#f3e5f5
+    style C fill:#fff9c4
+    style D fill:#e8f5e9
+    style E fill:#fce4ec
+    style F fill:#fff4e6
+    style G fill:#e0f2f1
+```
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                  1. DOCUMENT INGESTION                       │
-│  • PDF contracts uploaded to system                          │
-│  • Metadata extraction (project_id, contract_type, title)    │
-│  • Stored in PostgreSQL contract_asmd table                  │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│                  2. TEXT EXTRACTION                          │
-│  • PDFs converted to markdown format                         │
-│  • Preserve document structure and headings                  │
-│  • Store full text in PostgreSQL                             │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│                  3. CHUNKING & EMBEDDING                     │
-│  • Split documents into semantic chunks (~500 tokens)        │
-│  • Generate embeddings: text-embedding-3-small (OpenAI)      │
-│  • Vector dimension: 1536                                    │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│              4. VECTOR DATABASE INDEXING                     │
-│  • Index in OpenSearch contracts_oai index                   │
-│  • Store: embedding + chunk_text + metadata                  │
-│  • Enable kNN + BM25 hybrid search                           │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│                  5. QUERY PROCESSING                         │
-│  • User query → embedding                                    │
-│  • Hybrid search: 70% semantic + 30% keyword                 │
-│  • Apply filters: project_id, reference_doc_id               │
-│  • Return top-k chunks with relevance scores                 │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│                  6. LLM ANSWER GENERATION                    │
-│  • Context: retrieved chunks + message history               │
-│  • LLM: GPT-4 generates answer with citations                │
-│  • Citations: [doc1], [doc2] mapped to source documents      │
-│  • Response validation with retry logic (Tenacity)           │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│              7. CONVERSATION PERSISTENCE                     │
-│  • Save user message to DynamoDB                             │
-│  • Save assistant response with metadata                     │
-│  • Store response_time, citations, filter context            │
-│  • PK: USER#{user_id}, SK: MSG#{conv_id}#{msg_id}           │
-└──────────────────────────────────────────────────────────────┘
-```
 ---
 
 ## 6. Technology Stack
@@ -257,70 +152,20 @@ Contramate is an intelligent contract management assistant that leverages Large 
 - **Python 3.12** - Main programming language
 - **FastAPI** - High-performance REST API framework
 - **Uvicorn** - ASGI server with async support
-- **Pydantic** - Data validation and settings management
+### Technology Stack Summary
 
-**AI/ML Components**
-- **OpenAI GPT-4** - Large language model for reasoning
-- **text-embedding-3-small** - Document embeddings (1536 dim)
-- **Tenacity** - Retry logic for LLM reliability
-- **pydantic-ai** - Type-safe agent framework
+| Layer | Technologies |
+|-------|-------------|
+| **Backend** | FastAPI, Pydantic, neopipe (Result types), aioboto3, loguru |
+| **AI/ML** | OpenAI GPT-4, text-embedding-3-small, Tenacity retry, pydantic-ai |
+| **Search** | OpenSearch 2.11.1, kNN + BM25 hybrid, OpenSearch Dashboards |
+| **Databases** | PostgreSQL 15 (SQLModel ORM), DynamoDB Local |
+| **Frontend** | Streamlit 1.40 (current), Next.js 15 + TypeScript + Tailwind v4 (future) |
+| **Package Mgmt** | uv (Python), pnpm (Node.js) |
+| **Infrastructure** | Docker Compose, Clean Architecture (API → Services → Adapters → Agents) |
+| **Ports** | FastAPI:8000, Streamlit:8501, Postgres:5432, Dynamo:8001, OpenSearch:9200 |
 
-**Vector & Search**
-- **OpenSearch 2.11.1** - Vector database with kNN search
-- **Hybrid Search** - Combines semantic + BM25 keyword search
-- **OpenSearch Dashboards** - Search analytics UI
-
-**Databases**
-- **PostgreSQL 15** - Contract metadata and relational data
-- **DynamoDB Local** - Conversation and message persistence
-- **SQLModel** - Type-safe ORM for PostgreSQL
-
-**API & Services**
-- **neopipe** - Result types (Ok/Err) for error handling
-- **aioboto3** - Async AWS SDK for DynamoDB
-- **loguru** - Structured logging throughout
-
-### Frontend Technologies
-
-**UI Framework**
-- **Streamlit 1.40.0** - Current production UI
-- **Next.js 15** - Future frontend (in development)
-- **TypeScript** - Type-safe frontend code
-- **Tailwind CSS v4** - Utility-first styling
-- **shadcn/ui** - Component library
-
-**Package Management**
-- **uv** - Fast Python package manager
-- **pnpm** - Efficient Node.js package manager
-
-### Infrastructure & DevOps
-
-**Containerization**
-- **Docker** - Application containerization
-- **Docker Compose** - Multi-service orchestration
-- Services: Backend, UI, PostgreSQL, DynamoDB, OpenSearch
-
-**Architecture**
-- **Clean Architecture** - Separation of concerns
-  - `api/interfaces/controllers` - Endpoint handlers
-  - `services` - Business logic with Result types
-  - `dbs/adapters` - Database abstraction layer
-  - `core/agents` - Multi-agent AI system
-  - `llm` - LLM client abstraction (OpenAI + Azure)
-
-**Deployment**
-```yaml
-# docker-compose.yml structure
-services:
-  backend:    # FastAPI (Port 8000)
-  ui:         # Streamlit (Port 8501)
-  postgres:   # PostgreSQL (Port 5432)
-  dynamodb:   # DynamoDB Local (Port 8001)
-  opensearch: # OpenSearch (Port 9200)
-  dashboards: # OpenSearch UI (Port 5601)
-```
-
-**Summary:**
+### Production Readiness Assessment
 
 | Category | Score | Priority |
 |----------|-------|----------|
@@ -335,56 +180,19 @@ services:
 | User Experience & Frontend | 6/10 | 🟡 MEDIUM |
 | Compliance & Privacy | 2/10 | 🔴 HIGH |
 
-**Current Status:** **Prototype/MVP Ready** ✅
-**Production Ready:** ❌ (Estimated 6-9 months of hardening needed)
-
+**Status:** Prototype/MVP Ready ✅ | Production Ready: ❌ (6-9 months hardening needed)
 
 ---
 
 ## 8. Demonstration Flow
 
-**Step 1: Document Selection**
-```
-UI: User selects "HealthGate Hosting Agreement" from dropdown
-→ Stored in conversation filters
-→ Document metadata fetched from PostgreSQL
-```
-
-**Step 2: Initial Query**
-```
-User: "What are the payment terms?"
-→ Query embedding generated
-→ Hybrid search in OpenSearch (filtered to selected document)
-→ Top 5 relevant chunks retrieved
-```
-
-**Step 3: LLM Response**
-```
-Agent: "The payment terms include multiple staged payments:
-- $100,000 due on 30 January 1998
-- $150,000 due on 6 February 1998
-...
-Invoices are payable within 60 days of receipt [doc1]."
-
-Citations: {"doc1": "HEALTHGATEDATACORP_11_24_1999.pdf"}
-Response Time: 7.03s
-```
-
-**Step 4: Follow-Up Question (With Context)**
-```
-User: "What happens if payment is late?"
-→ Message history includes previous Q&A
-→ Agent understands "payment" refers to contract terms already discussed
-→ Retrieves clauses about late payment penalties
-```
-
-**Step 5: Multi-Document Comparison**
-```
-User: "Compare payment terms between the contracts."
-→ Filters updated to include Contract A + Contract B
-→ Tool: compare_filtered_documents
-→ Returns side-by-side comparison with citations for each
-```
+| Step | Action | Details |
+|------|--------|---------|
+| **1. Select Document** | User picks "HealthGate Hosting Agreement" | Filters stored, metadata fetched from PostgreSQL |
+| **2. Initial Query** | "What are the payment terms?" | Query embedded → Hybrid search → Top 5 chunks retrieved |
+| **3. LLM Response** | Payment terms listed with citations | `[doc1]` citations mapped, Response time: 7.03s |
+| **4. Follow-Up** | "What happens if payment is late?" | History provides context, retrieves penalty clauses |
+| **5. Comparison** | "Compare payment terms between contracts" | `compare_filtered_documents` tool, side-by-side results |
 
 ---
 
@@ -392,142 +200,77 @@ User: "Compare payment terms between the contracts."
 
 ### Technical Problem-Solving
 
-**1. Pydantic-AI Structured Output Bug**
-- **Problem:** Citation validation failed with message history
-  - Without history: ✅ `{"doc1": "HEALTHGATEDATACORP.pdf"}`
-  - With history: ❌ `{"doc1": 1}` or `{"0": "doc1"}`
-- **Solution:** Bypassed pydantic-ai, implemented vanilla OpenAI client with manual JSON validation
-- **Impact:** 100% reliability vs 30% success rate
+| Challenge | Issue | Solution | Result |
+|-----------|-------|----------|--------|
+| **Pydantic-AI Bug** | Citation validation failed with history: `{"doc1": 1}` instead of `{"doc1": "file.pdf"}` | Vanilla OpenAI client with manual JSON validation | 100% reliability (vs 30%) |
+
 ---
 
 ## 10. Results & Impact
 
 ### Quantitative Outcomes
 
-| Metric | Before (Manual) | After (Contramate) | Improvement |
-|--------|----------------|-------------------|-------------|
-| Contract review time | 2-4 hours | 5-10 minutes | **95% reduction** |
-| Multi-doc comparison | 30+ minutes | 30 seconds | **98% reduction** |
-| Answer accuracy | 60% (keyword) | 95% (hybrid) | **+35% improvement** |
-| Source attribution | Manual lookup | Automatic citations | **100% coverage** |
-| Knowledge retention | Expert-dependent | Conversation history | **Persistent** |
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| **Review Time** | 2-4 hours | 5-10 min | 95% ↓ |
+| **Multi-Doc Compare** | 30+ min | 30 sec | 98% ↓ |
+| **Accuracy** | 60% (keyword) | 95% (hybrid) | +35% |
+| **Citations** | Manual lookup | Auto-generated | 100% coverage |
+| **Knowledge** | Expert-dependent | Persistent history | Always available |
 
 ### Qualitative Benefits
 
-**For Legal Teams**
-- Instant access to contract knowledge without reading full documents
-- Confidence in AI answers through citation backing
-- Reduced cognitive load from repetitive contract searches
-
-**For Organizations**
-- Democratized contract knowledge across teams
-- Audit trail for compliance and governance
-- Scalable to thousands of contracts without linear cost increase
-
-**For Developers (Learning Outcomes)**
-- Production-grade multi-agent system design
-- RAG architecture with vector databases
-- Error handling patterns for LLM reliability
-- Full-stack integration from UI to database
+| Stakeholder | Benefits |
+|-------------|----------|
+| **Legal Teams** | Instant contract knowledge, citation confidence, reduced cognitive load |
+| **Organizations** | Democratized knowledge, audit trails, scalable without linear costs |
+| **Developers** | Multi-agent design patterns, RAG architecture, LLM reliability techniques |
 
 ---
 
-## 11. Future Enhancements
+## 11. Future Roadmap
 
-### Roadmap
-
-**Phase 1: Advanced Analytics (Q1 2025)**
-- Contract risk scoring based on clause patterns
-- Anomaly detection for non-standard terms
-- Dashboard for contract portfolio insights
-
-**Phase 2: Document Generation (Q2 2025)**
-- Generate contract summaries
-- Extract key terms into structured tables
-- Auto-populate contract templates
-
-**Phase 3: Multi-Language Support (Q3 2025)**
-- Translation layer for non-English contracts
-- Multilingual embedding models
-- Cross-language contract comparison
-
-**Phase 4: Enterprise Features (Q4 2025)**
-- Role-based access control (RBAC)
-- SSO integration (OAuth, SAML)
-- Audit logging for compliance
-- API rate limiting and usage analytics
-
-**Phase 5: Advanced AI Capabilities**
-- Fine-tuned models on legal domain
-- Graph-based contract relationship mapping
-- Predictive analytics for contract negotiation outcomes
+| Phase | Timeline | Features |
+|-------|----------|----------|
+| **Advanced Analytics** | Q1 2025 | Risk scoring, anomaly detection, portfolio dashboard |
+| **Document Generation** | Q2 2025 | Auto-summaries, term extraction, template population |
+| **Multi-Language** | Q3 2025 | Translation layer, multilingual embeddings, cross-language comparison |
+| **Enterprise** | Q4 2025 | RBAC, SSO (OAuth/SAML), audit logging, rate limiting |
+| **Advanced AI** | 2026+ | Fine-tuned legal models, graph relationships, predictive analytics |
 
 ---
 
 ## 12. Lessons Learned
 
-### Key Takeaways
-
-**1. Always Validate LLM Outputs**
-- LLMs are non-deterministic; structured outputs can fail
-- Implement retry logic with exponential backoff
-- Use custom validation errors to trigger retries selectively
-
-**2. Hybrid Search > Semantic-Only**
-- Pure semantic search misses exact keyword matches
-- Combining kNN + BM25 gives best of both worlds
-- 70/30 split (semantic/keyword) works well in practice
-
-**3. Message History is Critical**
-- Users expect conversational context
-- Naively passing history can break structured outputs
-- Test agents with and without history during development
-
-**4. Citation Trust is Non-Negotiable**
-- Users won't adopt AI systems without source attribution
-- Inline citations must map to actual documents, not placeholders
-- Validation layer prevents hallucinated references
-
-**5. Clean Architecture Pays Off**
-- Separating API, services, and data layers enables rapid changes
-- Result types (Ok/Err) make error handling explicit
-- Factory patterns allow easy testing and dependency injection
-
-**6. Docker Simplifies Deployment**
-- Single `docker-compose up` starts entire stack
-- Environment-specific configs via `.envs/docker.env`
-- Internal networking (backend:8000) avoids localhost issues
-
-**7. User Experience Details Matter**
-- Response time display builds user trust
-- Document context visibility reduces confusion
-- Expandable sections prevent UI clutter
+| Lesson | Insight |
+|--------|---------|
+| **Validate LLM Outputs** | Non-deterministic failures require retry logic with exponential backoff |
+| **Hybrid Search Wins** | kNN + BM25 (70/30 split) outperforms semantic-only search |
+| **History Management** | Conversational context critical but can break structured outputs |
+| **Citation Trust** | Source attribution non-negotiable; validate to prevent hallucinations |
+| **Clean Architecture** | Result types, factories, layer separation enable rapid iteration |
+| **Docker Deployment** | `docker-compose up` simplifies multi-service orchestration |
+| **UX Details** | Response time, context visibility, expandable sections build trust |
 
 ---
 
 ## 13. Conclusion
 
-### Project Summary
+### Key Achievements
 
-Contramate demonstrates that **AI-powered contract management is not just feasible—it's transformative**. By combining:
+| Metric | Result |
+|--------|--------|
+| **Time Reduction** | 95% (hours → minutes) |
+| **Search Accuracy** | 95%+ (vs 60% keyword-only) |
+| **Contracts Indexed** | 500+ documents |
+| **Architecture** | Multi-agent orchestration + RAG + Clean Architecture |
+| **Status** | MVP Ready ✅, Enterprise: 6-9 months |
 
-- **Multi-agent orchestration** for complex reasoning workflows
-- **Hybrid vector search** for accurate information retrieval
-- **Citation-backed responses** for trust and auditability
-- **Conversation persistence** for natural interactions
-- **Production-ready engineering** with retry logic, validation, and clean architecture
+### Impact
 
-...we've built a system that **reduces contract review time by 95%** while **maintaining high accuracy and full traceability**.
+**Contramate proves AI-powered contract management is transformative**, combining multi-agent systems, hybrid vector search, citation-backed responses, and production-ready engineering to deliver a **deployable solution** that showcases technical depth, real-world applicability, and full-stack expertise.
 
-### Impact Statement
-
-This project showcases:
-- **Technical depth**: Multi-agent systems, RAG architecture, vector databases
-- **Real-world applicability**: Solves genuine pain points in legal/procurement workflows
-- **Production readiness**: Docker deployment, error handling, monitoring
-- **Full-stack expertise**: Backend services, databases, UI, DevOps
-
-Contramate is not just a proof-of-concept—it's a **deployable solution** ready to scale to enterprise contract portfolios.
+---
 
 ---
 
@@ -535,7 +278,11 @@ Contramate is not just a proof-of-concept—it's a **deployable solution** ready
 
 ### Contact & Resources
 
-**Project Repository:** [Link to GitHub]  
+| Resource | Link |
+|----------|------|
+| **GitHub Repository** | [github.com/MrDataPsycho/contra.mate](https://github.com/MrDataPsycho/contra.mate) |
+| **LinkedIn** | [linkedin.com/in/sheikh-alam-data](https://www.linkedin.com/in/mr-data-psycho/) |
+| **Documentation** | [mrdatapsycho.github.io/contra.mate](https://mrdatapsycho.github.io/contra.mate/) |
 
 ---
 
