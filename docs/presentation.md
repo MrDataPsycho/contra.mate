@@ -63,7 +63,31 @@
 
 ## 4. System Architecture: Multi-Agent Design
 
-### Agent Orchestration Flow
+### Expected Workflow
+```mermaid
+graph TD
+    A[User Query] --> B{Query Router}
+    B -->|Metadata Query| C[Contract Metadata Insight Agent]
+    B -->|Semantic Query| D[Talk to Contract Agent]
+    
+    C --> E[PostgreSQL]
+    E --> F[contract_asmd]
+    E --> G[contracting_esmd]
+    
+    D --> H[OpenSearch]
+    H --> I[Vector Search]
+    
+    C --> J[LLM: SQL Generation]
+    D --> K[LLM: Answer Generation]
+    
+    J --> L[Response with Citations]
+    K --> L
+    
+    L --> M[Answer Critique Agent]
+    M --> N[Validated Response]
+```
+
+### Current
 
 ```mermaid
 graph TD
