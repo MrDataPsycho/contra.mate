@@ -1,7 +1,7 @@
 from loguru import logger
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
-from pydantic_ai.settings import ModelSettings
+# from pydantic_ai.settings import ModelSettings
 from contramate.core.agents import PyadanticAIModelUtilsFactory
 from pydantic_ai.run import AgentRunResult
 
@@ -84,7 +84,7 @@ class AnswerCritiqueAgent:
         """
         model, model_settings = PyadanticAIModelUtilsFactory.create_default()
 
-        agent = Agent(
+        agent = Agent[AnswerCritiqueResponse](
             model=model,
             system_prompt=SYSTEM_PROMPT,
             output_type=AnswerCritiqueResponse,

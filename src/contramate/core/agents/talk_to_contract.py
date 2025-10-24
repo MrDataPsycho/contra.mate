@@ -1,7 +1,7 @@
 from loguru import logger
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Annotated
 from dataclasses import dataclass
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic_ai import Agent, RunContext
 from contramate.core.agents import PyadanticAIModelUtilsFactory
 from contramate.services.opensearch_vector_search_service import (
@@ -455,7 +455,7 @@ class TalkToContractResponse(BaseModel):
         ...,
         description="The complete answer to the user's question with proper citations and formatting. "
         "CRITICAL CITATION RULES: "
-        "- If using ONLY ONE document: Write a cohesive answer and cite ONCE at the very end. "
+        "- If using ONLY ONE document: Write a cohesive answer and cite ONCE at the very end with [doc1]. "
         "- If using MULTIPLE documents: Each sentence must end with ONLY ONE citation like [doc1] or [doc2]. "
         "NEVER use multiple citations in one sentence like [doc1][doc2] or [doc1, doc2]. "
         "Write separate sentences/paragraphs for each source. "
@@ -463,15 +463,37 @@ class TalkToContractResponse(BaseModel):
         "Use bullet points for lists. "
         "NEVER add standalone citations at the end (e.g., do NOT end with [doc1]\\n[doc2]\\n[doc3]). "
         "Citations must only appear at the end of actual sentences. "
+        "MANDATORY: Your answer MUST contain at least one citation in [docN] format. "
         "Follow the formatting and citation rules from the system prompt."
     )
     citations: Dict[str, str] = Field(
         ...,
-        description="Mapping of citation keys to display names. "
-        "Example: {'doc1': 'Contract_ABC.pdf - Section 2.1', 'doc2': 'Agreement_XYZ.pdf - Section 3.4'}. "
-        "Use the Document field from search results to create meaningful citation labels. "
-        "Only include citations that are actually used in the answer."
+        description="Dictionary mapping citation keys to FULL DOCUMENT NAMES (strings). "
+        "Keys: Use citation keys as strings: 'doc1', 'doc2', 'doc3' (not numbers like 1, 2, 3). "
+        "Values: Use the complete Document field value from search results - this is ALWAYS a string like 'HEALTHGATE_CONTRACT.pdf.md-2'. "
+        "NEVER use numbers (1, 2, 3) as values. NEVER use citation keys ('doc1', 'doc2') as values. "
+        "Example CORRECT: {'doc1': 'HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1).pdf.md-2', 'doc2': 'SERVICE_AGREEMENT.pdf.md-5'}. "
+        "Example WRONG: {'doc1': 1} or {'doc1': 'doc1'} or {1: 'document.pdf'}. "
+        "CRITICAL: The value MUST be the exact Document field string from the search result metadata table, nothing else."
     )
+
+    @field_validator('citations')
+    @classmethod
+    def validate_citations_are_strings(cls, v: Dict[str, str]) -> Dict[str, str]:
+        """Ensure all citation values are strings, not integers or other types."""
+        for key, value in v.items():
+            if not isinstance(value, str):
+                raise ValueError(
+                    f"Citation value for '{key}' must be a string (document name), "
+                    f"got {type(value).__name__}: {value}. "
+                    f"Use the Document field from search results."
+                )
+            if value.isdigit():  # Check if it's just a number as string
+                raise ValueError(
+                    f"Citation value for '{key}' cannot be just a number: '{value}'. "
+                    f"Use the full Document field from search results (e.g., 'CONTRACT.pdf.md-2')."
+                )
+        return v
 
 
 class TalkToContractAgentFactory:
@@ -493,6 +515,7 @@ class TalkToContractAgentFactory:
             output_type=TalkToContractResponse,
             model_settings=model_settings,
             deps_type=TalkToContractDependencies,
+            retries=3,  # Increase retries for message history cases
         )
 
         # Register tools
@@ -519,6 +542,7 @@ class TalkToContractAgentFactory:
             output_type=TalkToContractResponse,
             model_settings=model_settings,
             deps_type=TalkToContractDependencies,
+            retries=3,  # Increase retries for message history cases
         )
 
         # Register tools

@@ -3,7 +3,7 @@ from typing import Dict, Any
 import logging
 from neopipe import Result, Ok, Err
 
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.core import PostgresSettings
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ class PostgresService:
     """Service for PostgreSQL database operations and status checks"""
 
     def __init__(self):
-        self.config = settings.postgres
+        self.config = PostgresSettings()
 
     def get_connection_string(self) -> str:
         """Get PostgreSQL connection string"""

@@ -112,6 +112,35 @@ class AppSettings(ABCBaseSettings):
     model_config["env_prefix"] = "APP_"
 
 
+class AgentToggleSettings(ABCBaseSettings):
+    """
+    Settings for toggling individual agents in the executor pipeline.
+
+    These settings allow disabling optional agents like clarifier, query_rewriter,
+    and answer_critique while keeping the core talk_to_contract agent always enabled.
+    """
+
+    # Agent toggle flags (default: all enabled)
+    enable_clarifier_agent: bool = Field(
+        default=True,
+        description="Enable ClarifierAgent (human-in-the-loop for query clarification)"
+    )
+    enable_query_rewriter_agent: bool = Field(
+        default=True,
+        description="Enable QueryRewriterAgent (contextualizes queries with conversation history)"
+    )
+    enable_answer_critique_agent: bool = Field(
+        default=True,
+        description="Enable AnswerCritiqueAgent (validates answer completeness)"
+    )
+
+    model_config = ABCBaseSettings.model_config.copy()
+    model_config["env_prefix"] = "AGENT_"
+
+    # Note: TalkToContract is always enabled (cannot be disabled)
+    # It's the core agent for contract querying
+
+
 if __name__ == "__main__":
     from loguru import logger
     logger.info("setting")

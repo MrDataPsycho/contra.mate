@@ -7,7 +7,7 @@ from contramate.dbs.interfaces.conversation_store import AbstractConversationRep
 from contramate.domain.entities.message import Message
 from contramate.domain.value_objects.message_role import MessageRole
 from contramate.core.agents.orchrastrator import OrchrastratorAgent
-from contramate.llm import OpenAIChatClient, LiteLLMChatClient
+from contramate.llm import OpenAIChatClient
 
 
 class GetAIResponseUseCase:

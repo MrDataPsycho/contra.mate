@@ -36,10 +36,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Project Guidelines for Python
 - Do use relative imports in python always use contramate as the root package.
-- When ever possible if the modules are imported to another module first reimport them in the module level __init__.py file and then import from the package. For example: if you want to import `DynamoDBConversationAdapter` from `src/contramate/dbs/adapters/dynamodb_conversation.py` first import it in `src/contramate/dbs/adapters/__init__.py` and then import it from `contramate.dbs. 
+- When ever possible if the modules are imported to another module first reimport them in the module level __init__.py file and then import from the package. For example: if you want to import `DynamoDBConversationAdapter` from `src/contramate/dbs/adapters/dynamodb_conversation.py` first import it in `src/contramate/dbs/adapters/__init__.py` and then import it from `contramate.dbs.
 - Do not reimport interfaces import them from root package.
 - Never import inside of a function rather at the root
 - Always use logger from loguru and do not add logger into the class like self.logger = logger rather use the loguru logger from import
+
+## Message History Conversion Standard
+
+When working with agents that accept conversation history, always use the `MessageHistory` model for conversion:
+
+```python
+from contramate.models import MessageHistory
+
+# Build conversation history
+message_dicts = [
+    {
+        "role": "user",
+        "content": "What are the key details of this contract?",
+        "timestamp": "2024-10-01T12:00:00Z"
+    },
+    {
+        "role": "assistant",
+        "content": "The contract is between..."
+    },
+]
+
+# Convert to pydantic-ai format
+message_history = MessageHistory.model_validate({"messages": message_dicts})
+pydantic_messages = message_history.to_pydantic_ai_messages()
+
+# Use with agent
+result = await agent.run(user_query, message_history=pydantic_messages)
+```
+
+**Important**:
+- Always use `MessageHistory.model_validate()` to create the history object
+- Always call `.to_pydantic_ai_messages()` to convert to pydantic-ai format
+- Pass the converted messages to `agent.run()` via the `message_history` parameter
+- This ensures consistency across all agents in the system
+
+## Agent Factory Pattern
+
+All agents follow a consistent factory pattern for creation:
+
+```python
+class MyAgentFactory:
+    """Factory for creating MyAgent instances."""
+
+    @staticmethod
+    def create_default() -> Agent:
+        """Create agent with default settings from environment."""
+        model, model_settings = PyadanticAIModelUtilsFactory.create_default()
+        # ... create and configure agent
+        return agent
+
+    @staticmethod
+    def from_env_file(env_path: str) -> Agent:
+        """Create agent from specific environment file."""
+        model, model_settings = PyadanticAIModelUtilsFactory.from_env_file(env_path)
+        # ... create and configure agent
+        return agent
+```
+
+**Important**:
+- Always use `create_default()` and `from_env_file()` as factory method names
+- Do NOT create convenience functions like `create_my_agent()` - use the factory directly
+- Use `PyadanticAIModelUtilsFactory` to get model and settings
+- Register tools via `_register_tools(agent)` helper function if needed
+- Use `deps_type` parameter to specify dependencies for agents that need context
 
 ## Terminal Usage Guideline
 - If docker any service is not working, try /bin/zsh -il -c as terminal.

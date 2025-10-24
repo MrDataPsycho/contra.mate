@@ -13,14 +13,14 @@ COPY pyproject.toml uv.lock README.md ./
 # Copy the application code
 COPY src ./src
 
-ENV HTTP_PROXY=http://eu-chst-proxy.EU.novartis.net:2010
-ENV HTTPS_PROXY=http://eu-chst-proxy.EU.novartis.net:2010
-ENV no_proxy=openai.azure.com,search.windows.net,documents.azure.com,dev.azure.com,blob.core.windows.net
-ENV NO_PROXY=openai.azure.com,search.windows.net,documents.azure.com,dev.azure.com,blob.core.windows.net
+# Optional: Set proxy environment variables if needed (uncomment for corporate networks)
+# ENV HTTP_PROXY=http://your-proxy:port
+# ENV HTTPS_PROXY=http://your-proxy:port
+# ENV no_proxy=localhost,127.0.0.1
+# ENV NO_PROXY=localhost,127.0.0.1
 
-
-# Install the package and its dependencies
-RUN uv sync --frozen --no-cache
+# Install the package and its dependencies (production only, no dev dependencies)
+RUN uv sync --frozen --no-cache --no-dev
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
@@ -28,4 +28,5 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Reset the entrypoint, don't invoke `uv`
 ENTRYPOINT []
 
-CMD ["uvicorn", "src.contramate.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Use --reload for development, remove it for production
+CMD ["uvicorn", "src.contramate.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

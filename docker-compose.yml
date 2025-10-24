@@ -9,13 +9,25 @@ services:
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
     env_file:
-      - .envs/local.env
+      - .envs/docker.env
+    depends_on:
+      - opensearch
+      - postgres
+      - dynamodb
+    networks:
+      - rag-net
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: rag-ui
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
     environment:
-      - RUNTIME_ENV=local
-      - HOST_SYSTEM=container
-      - OPENSEARCH_INDEX_NAME=contracts-test
-    # volumes:
-    #   - ./vectordb:/app/vectordb
+      - API_BASE_URL=http://backend:8000
     networks:
       - rag-net
 
@@ -85,20 +97,20 @@ services:
     networks:
       - rag-net
 
-  opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.11.1
-    container_name: rag-opensearch-dashboards
-    ports:
-      - "5601:5601"
-    expose:
-      - "5601"
-    environment:
-      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
-      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
-    depends_on:
-      - opensearch
-    networks:
-      - rag-net
+  # opensearch-dashboards:
+  #   image: opensearchproject/opensearch-dashboards:2.11.1
+  #   container_name: rag-opensearch-dashboards
+  #   ports:
+  #     - "5601:5601"
+  #   expose:
+  #     - "5601"
+  #   environment:
+  #     - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+  #     - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
+  #   depends_on:
+  #     - opensearch
+  #   networks:
+  #     - rag-net
 
 networks:
   rag-net:

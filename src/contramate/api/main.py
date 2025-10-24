@@ -1,13 +1,14 @@
+"""Main FastAPI application entry point."""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
-from contramate.services.postgres_status_service import PostgresService
-from contramate.services.dynamodb_status_service import DynamoDBStatusService
-from contramate.services.opensearch_status_service import OpenSearchStatusService
-from contramate.services.openai_status_service import OpenAIStatusService
-from contramate.services.litellm_status_service import LiteLLMStatusService
-from contramate.llm import OpenAIChatClient, LiteLLMChatClient
-from contramate.interfaces.controllers import chat_router
+
+from contramate.api.interfaces.controllers.root_controller import router as root_router
+from contramate.api.interfaces.controllers.chat_controller import router as chat_router
+from contramate.api.interfaces.controllers.status_controller import router as status_router
+from contramate.api.interfaces.controllers.contracts_controller import router as contracts_router
+from contramate.api.interfaces.controllers.conversations_controller import router as conversations_router
+
 
 app = FastAPI(
     title="Contramate API",
@@ -15,88 +16,21 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Initialize clients and services with dependency injection
-openai_client = OpenAIChatClient()
-litellm_client = LiteLLMChatClient()
-
-# Initialize services with injected dependencies
-postgres_service = PostgresService()
-dynamodb_service = DynamoDBStatusService()
-opensearch_service = OpenSearchStatusService()
-openai_service = OpenAIStatusService(client=openai_client)
-litellm_service = LiteLLMStatusService(client=litellm_client)
-
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js frontend
+    allow_origins=["http://localhost:3000", "http://localhost:8501"],  # Next.js frontend + Streamlit
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include chat router
+# Register routers
+app.include_router(root_router)
 app.include_router(chat_router)
-
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {
-        "message": "Welcome to Contramate API",
-        "version": "0.1.0",
-        "status": "running"
-    }
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "environment": os.getenv("RUNTIME_ENV", "unknown"),
-        "host_system": os.getenv("HOST_SYSTEM", "unknown")
-    }
-
-@app.get("/api/contracts")
-async def get_contracts():
-    """Get contracts from CUAD dataset"""
-    return {
-        "message": "Contracts endpoint - to be implemented",
-        "contracts": []
-    }
-
-@app.post("/api/search")
-async def search_contracts(query: dict):
-    """Search contracts using vector search"""
-    return {
-        "message": "Search endpoint - to be implemented",
-        "query": query.get("query", ""),
-        "results": []
-    }
-
-@app.get("/api/opensearch/status")
-async def opensearch_status():
-    """Check OpenSearch connection status"""
-    return await opensearch_service.check_status()
-
-@app.get("/api/postgres/status")
-async def postgres_status():
-    """Check PostgreSQL connection status"""
-    return await postgres_service.check_status()
-
-@app.get("/api/dynamodb/status")
-async def dynamodb_status():
-    """Check DynamoDB connection status"""
-    return await dynamodb_service.check_status()
-
-@app.get("/api/openai/status")
-async def openai_status():
-    """Check OpenAI API connection status"""
-    return await openai_service.check_status()
-
-@app.get("/api/litellm/status")
-async def litellm_status():
-    """Check LiteLLM API connection status"""
-    return await litellm_service.check_status()
+app.include_router(status_router)
+app.include_router(contracts_router)
+app.include_router(conversations_router)
 
 
 if __name__ == "__main__":

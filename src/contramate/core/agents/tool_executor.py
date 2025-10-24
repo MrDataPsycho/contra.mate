@@ -1,6 +1,6 @@
 import logging
 from typing import Union
-from contramate.llm import OpenAIChatClient, LiteLLMChatClient
+from contramate.llm import OpenAIChatClient
 from contramate.core.agents.tools import handle_tool_calls, get_tool_descriptions
 
 

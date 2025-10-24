@@ -3,7 +3,6 @@ import logging
 from openai import OpenAIError, AuthenticationError, RateLimitError, APIConnectionError
 from neopipe import Result, Ok, Err
 
-from contramate.utils.settings.core import settings
 from contramate.llm import OpenAIChatClient, ChatMessage
 
 logger = logging.getLogger(__name__)
@@ -12,7 +11,6 @@ class OpenAIStatusService:
     """Service for OpenAI API connection status checks"""
 
     def __init__(self, client: OpenAIChatClient = None):
-        self.config = settings.openai
         self.client = client or OpenAIChatClient()
 
     async def check_status(self) -> Result[Dict[str, Any], Dict[str, Any]]:
@@ -53,7 +51,6 @@ class OpenAIStatusService:
             return Err({
                 "connected": False,
                 "status": "authentication_error",
-                "model": self.config.model,
                 "error": str(e),
                 "message": "OpenAI API authentication failed - check API key"
             })
@@ -62,7 +59,6 @@ class OpenAIStatusService:
             return Err({
                 "connected": False,
                 "status": "rate_limit_error",
-                "model": self.config.model,
                 "error": str(e),
                 "message": "OpenAI API rate limit exceeded"
             })
@@ -71,7 +67,6 @@ class OpenAIStatusService:
             return Err({
                 "connected": False,
                 "status": "connection_error",
-                "model": self.config.model,
                 "error": str(e),
                 "message": "OpenAI API connection failed"
             })
@@ -80,7 +75,6 @@ class OpenAIStatusService:
             return Err({
                 "connected": False,
                 "status": "api_error",
-                "model": self.config.model,
                 "error": str(e),
                 "message": "OpenAI API error occurred"
             })
@@ -89,7 +83,6 @@ class OpenAIStatusService:
             return Err({
                 "connected": False,
                 "status": "error",
-                "model": self.config.model,
                 "error": str(e),
                 "message": "Unexpected error occurred"
             })

@@ -38,6 +38,19 @@ class UpdateConversationTitleRequest(BaseModel):
     title: str = Field(..., min_length=1, description="New conversation title")
 
 
+class TalkToContractRequest(BaseModel):
+    """Request model for talk to contract queries"""
+
+    query: str = Field(..., min_length=1, description="User query about contracts")
+    filters: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional filters for search (documents, contract_type, source, project)",
+    )
+    message_history: Optional[List[Dict[str, str]]] = Field(
+        None, description="Optional conversation history for context"
+    )
+
+
 # Response Models
 class MessageResponse(BaseModel):
     """Response model for a message"""
@@ -105,3 +118,17 @@ class SuccessResponse(BaseModel):
     status_code: int
     timestamp: str
     data: Optional[Any] = None
+
+
+class TalkToContractResponse(BaseModel):
+    """Response model for talk to contract queries"""
+
+    success: bool
+    answer: str = Field(..., description="The formatted answer with citations")
+    citations: Dict[str, str] = Field(
+        ..., description="Mapping of citation keys to document names"
+    )
+    metadata: Optional[Dict[str, Any]] = Field(
+        None, description="Additional metadata like token usage"
+    )
+    error: Optional[str] = Field(None, description="Error message if query failed")

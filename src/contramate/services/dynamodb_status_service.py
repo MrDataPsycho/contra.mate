@@ -5,14 +5,14 @@ from typing import Dict, Any
 import asyncio
 from neopipe import Result, Ok, Err
 
-from contramate.utils.settings.core import settings
+from contramate.utils.settings.core import DynamoDBSettings
 from loguru import logger
 
 class DynamoDBStatusService:
     """Service for DynamoDB connection status checks"""
 
     def __init__(self):
-        self.config = settings.dynamodb
+        self.config = DynamoDBSettings()
 
     def get_client(self):
         """Get DynamoDB client with timeout configuration"""

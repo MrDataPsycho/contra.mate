@@ -195,10 +195,14 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
         feedback: str = "",
         message_id: Optional[str] = None,
         filter_value: Optional[Dict[str, Any]] = None,
-        is_user_filter_text: bool = False
+        is_user_filter_text: bool = False,
+        metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Create a new message in a conversation.
+
+        Args:
+            metadata: Optional metadata dict for storing additional info like response_time
         """
         if message_id is None:
             message_id = str(uuid.uuid4())
@@ -213,6 +217,7 @@ class DynamoDBConversationAdapter(AbstractConversationRepository):
             "feedback": feedback,
             "filter_value": filter_value,
             "is_user_filter_text": is_user_filter_text,
+            "metadata": metadata or {},  # Store metadata like response_time
             "createdAt": datetime.now(timezone.utc).isoformat(),
             "updatedAt": datetime.now(timezone.utc).isoformat(),
         }

@@ -1,7 +1,6 @@
 """Contract models for CUAD dataset"""
 
 from datetime import datetime
-from tkinter import NO
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Column, Text
 from sqlalchemy import JSON
