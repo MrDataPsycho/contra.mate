@@ -513,9 +513,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#agent-orchestration-flow" class="md-nav__link">
+  <a href="#expected-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Agent Orchestration Flow
+      Expected Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current" class="md-nav__link">
+    <span class="md-ellipsis">
+      Current
     </span>
   </a>
   
@@ -1061,9 +1070,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#agent-orchestration-flow" class="md-nav__link">
+  <a href="#expected-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Agent Orchestration Flow
+      Expected Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current" class="md-nav__link">
+    <span class="md-ellipsis">
+      Current
     </span>
   </a>
   
@@ -1439,7 +1457,28 @@
 </table>
 <hr />
 <h2 id="4-system-architecture-multi-agent-design">4. System Architecture: Multi-Agent Design<a class="headerlink" href="#4-system-architecture-multi-agent-design" title="Permanent link">&para;</a></h2>
-<h3 id="agent-orchestration-flow">Agent Orchestration Flow<a class="headerlink" href="#agent-orchestration-flow" title="Permanent link">&para;</a></h3>
+<h3 id="expected-workflow">Expected Workflow<a class="headerlink" href="#expected-workflow" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>graph TD
+    A[User Query] --&gt; B{Query Router}
+    B --&gt;|Metadata Query| C[Contract Metadata Insight Agent]
+    B --&gt;|Semantic Query| D[Talk to Contract Agent]
+
+    C --&gt; E[PostgreSQL]
+    E --&gt; F[contract_asmd]
+    E --&gt; G[contracting_esmd]
+
+    D --&gt; H[OpenSearch]
+    H --&gt; I[Vector Search]
+
+    C --&gt; J[LLM: SQL Generation]
+    D --&gt; K[LLM: Answer Generation]
+
+    J --&gt; L[Response with Citations]
+    K --&gt; L
+
+    L --&gt; M[Answer Critique Agent]
+    M --&gt; N[Validated Response]</code></pre>
+<h3 id="current">Current<a class="headerlink" href="#current" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>graph TD
     A[USER INTERFACE&lt;br/&gt;Streamlit UI / Next.js Frontend] --&gt; B[FASTAPI BACKEND&lt;br/&gt;Chat Controller REST API]
     B --&gt; C[ORCHESTRATOR AGENT Main]
