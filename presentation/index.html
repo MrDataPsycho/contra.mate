@@ -26,7 +26,7 @@
     
     
       
-        <title>Contramate: AI-Powered Contract Management Assistant - Contramate Documentation</title>
+        <title>Contramate: Demo Day - Contramate Documentation</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#contramate-ai-powered-contract-management-assistant" class="md-skip">
+        <a href="#contramate-demo-day" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Contramate: AI-Powered Contract Management Assistant
+              Contramate: Demo Day
             
           </span>
         </div>
@@ -256,7 +256,7 @@
   
     
   
-  Contramate: AI-Powered Contract Management Assistant
+  Contramate: Demo Day
 
       </a>
     </li>
@@ -401,7 +401,7 @@
   
   
   <span class="md-ellipsis">
-    Contramate: AI-Powered Contract Management Assistant
+    Contramate: Demo Day
     
   </span>
   
@@ -414,7 +414,7 @@
   
   
   <span class="md-ellipsis">
-    Contramate: AI-Powered Contract Management Assistant
+    Contramate: Demo Day
     
   </span>
   
@@ -437,15 +437,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sheikh-alam" class="md-nav__link">
-    <span class="md-ellipsis">
-      Sheikh Alam
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#1-introduction" class="md-nav__link">
     <span class="md-ellipsis">
       1. Introduction
@@ -456,18 +447,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#about-contramate" class="md-nav__link">
+  <a href="#key-capabilities" class="md-nav__link">
     <span class="md-ellipsis">
-      About Contramate
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#about-the-developer" class="md-nav__link">
-    <span class="md-ellipsis">
-      About the Developer
+      Key Capabilities
     </span>
   </a>
   
@@ -479,26 +461,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-current-challenges-in-manual-contract-management" class="md-nav__link">
+  <a href="#2-problem-manual-contract-review-challenges" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Current Challenges in Manual Contract Management
+      2. Problem: Manual Contract Review Challenges
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="2. Current Challenges in Manual Contract Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-problem-landscape" class="md-nav__link">
-    <span class="md-ellipsis">
-      The Problem Landscape
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -527,6 +494,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#3-solution-contramate-ai-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Solution: Contramate AI System
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#4-system-architecture-multi-agent-design" class="md-nav__link">
     <span class="md-ellipsis">
       4. System Architecture: Multi-Agent Design
@@ -546,9 +522,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#agent-responsibilities" class="md-nav__link">
+  <a href="#agent-roles" class="md-nav__link">
     <span class="md-ellipsis">
-      Agent Responsibilities
+      Agent Roles
     </span>
   </a>
   
@@ -584,15 +560,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-document-ingestion-pdf-contracts-uploaded-to-system-metadata-extraction-project_id-contract_type-title-stored-in-postgresql-contract_asmd-table-2-text-extraction-pdfs-converted-to-markdown-format-preserve-document-structure-and-headings-store-full-text-in-postgresql-3-chunking-embedding-split-documents-into-semantic-chunks-500-tokens-generate-embeddings-text-embedding-3-small-openai-vector-dimension-1536-4-vector-database-indexing-index-in-opensearch-contracts_oai-index-store-embedding-chunk_text-metadata-enable-knn-bm25-hybrid-search-5-query-processing-user-query-embedding-hybrid-search-70-semantic-30-keyword-apply-filters-project_id-reference_doc_id-return-top-k-chunks-with-relevance-scores-6-llm-answer-generation-context-retrieved-chunks-message-history-llm-gpt-4-generates-answer-with-citations-citations-doc1-doc2-mapped-to-source-documents-response-validation-with-retry-logic-tenacity-7-conversation-persistence-save-user-message-to-dynamodb-save-assistant-response-with-metadata-store-response_time-citations-filter-context-pk-useruser_id-sk-msgconv_idmsg_id" class="md-nav__link">
-    <span class="md-ellipsis">
-      ┌──────────────────────────────────────────────────────────────┐ │ 1. DOCUMENT INGESTION │ │ • PDF contracts uploaded to system │ │ • Metadata extraction (project_id, contract_type, title) │ │ • Stored in PostgreSQL contract_asmd table │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 2. TEXT EXTRACTION │ │ • PDFs converted to markdown format │ │ • Preserve document structure and headings │ │ • Store full text in PostgreSQL │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 3. CHUNKING &amp; EMBEDDING │ │ • Split documents into semantic chunks (~500 tokens) │ │ • Generate embeddings: text-embedding-3-small (OpenAI) │ │ • Vector dimension: 1536 │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 4. VECTOR DATABASE INDEXING │ │ • Index in OpenSearch contracts_oai index │ │ • Store: embedding + chunk_text + metadata │ │ • Enable kNN + BM25 hybrid search │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 5. QUERY PROCESSING │ │ • User query → embedding │ │ • Hybrid search: 70% semantic + 30% keyword │ │ • Apply filters: project_id, reference_doc_id │ │ • Return top-k chunks with relevance scores │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 6. LLM ANSWER GENERATION │ │ • Context: retrieved chunks + message history │ │ • LLM: GPT-4 generates answer with citations │ │ • Citations: [doc1], [doc2] mapped to source documents │ │ • Response validation with retry logic (Tenacity) │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 7. CONVERSATION PERSISTENCE │ │ • Save user message to DynamoDB │ │ • Save assistant response with metadata │ │ • Store response_time, citations, filter context │ │ • PK: USER#{user_id}, SK: MSG#{conv_id}#{msg_id} │ └──────────────────────────────────────────────────────────────┘
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#6-technology-stack" class="md-nav__link">
     <span class="md-ellipsis">
       6. Technology Stack
@@ -612,18 +579,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#frontend-technologies" class="md-nav__link">
+  <a href="#technology-stack-summary" class="md-nav__link">
     <span class="md-ellipsis">
-      Frontend Technologies
+      Technology Stack Summary
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#infrastructure-devops" class="md-nav__link">
+  <a href="#production-readiness-assessment" class="md-nav__link">
     <span class="md-ellipsis">
-      Infrastructure &amp; DevOps
+      Production Readiness Assessment
     </span>
   </a>
   
@@ -701,26 +668,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#11-future-enhancements" class="md-nav__link">
+  <a href="#11-future-roadmap" class="md-nav__link">
     <span class="md-ellipsis">
-      11. Future Enhancements
+      11. Future Roadmap
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="11. Future Enhancements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#roadmap" class="md-nav__link">
-    <span class="md-ellipsis">
-      Roadmap
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -730,21 +682,6 @@
       12. Lessons Learned
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="12. Lessons Learned">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#key-takeaways" class="md-nav__link">
-    <span class="md-ellipsis">
-      Key Takeaways
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -759,18 +696,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#project-summary" class="md-nav__link">
+  <a href="#key-achievements" class="md-nav__link">
     <span class="md-ellipsis">
-      Project Summary
+      Key Achievements
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#impact-statement" class="md-nav__link">
+  <a href="#impact" class="md-nav__link">
     <span class="md-ellipsis">
-      Impact Statement
+      Impact
     </span>
   </a>
   
@@ -1066,15 +1003,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sheikh-alam" class="md-nav__link">
-    <span class="md-ellipsis">
-      Sheikh Alam
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#1-introduction" class="md-nav__link">
     <span class="md-ellipsis">
       1. Introduction
@@ -1085,18 +1013,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#about-contramate" class="md-nav__link">
+  <a href="#key-capabilities" class="md-nav__link">
     <span class="md-ellipsis">
-      About Contramate
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#about-the-developer" class="md-nav__link">
-    <span class="md-ellipsis">
-      About the Developer
+      Key Capabilities
     </span>
   </a>
   
@@ -1108,26 +1027,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-current-challenges-in-manual-contract-management" class="md-nav__link">
+  <a href="#2-problem-manual-contract-review-challenges" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Current Challenges in Manual Contract Management
+      2. Problem: Manual Contract Review Challenges
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="2. Current Challenges in Manual Contract Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-problem-landscape" class="md-nav__link">
-    <span class="md-ellipsis">
-      The Problem Landscape
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1156,6 +1060,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#3-solution-contramate-ai-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Solution: Contramate AI System
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#4-system-architecture-multi-agent-design" class="md-nav__link">
     <span class="md-ellipsis">
       4. System Architecture: Multi-Agent Design
@@ -1175,9 +1088,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#agent-responsibilities" class="md-nav__link">
+  <a href="#agent-roles" class="md-nav__link">
     <span class="md-ellipsis">
-      Agent Responsibilities
+      Agent Roles
     </span>
   </a>
   
@@ -1213,15 +1126,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-document-ingestion-pdf-contracts-uploaded-to-system-metadata-extraction-project_id-contract_type-title-stored-in-postgresql-contract_asmd-table-2-text-extraction-pdfs-converted-to-markdown-format-preserve-document-structure-and-headings-store-full-text-in-postgresql-3-chunking-embedding-split-documents-into-semantic-chunks-500-tokens-generate-embeddings-text-embedding-3-small-openai-vector-dimension-1536-4-vector-database-indexing-index-in-opensearch-contracts_oai-index-store-embedding-chunk_text-metadata-enable-knn-bm25-hybrid-search-5-query-processing-user-query-embedding-hybrid-search-70-semantic-30-keyword-apply-filters-project_id-reference_doc_id-return-top-k-chunks-with-relevance-scores-6-llm-answer-generation-context-retrieved-chunks-message-history-llm-gpt-4-generates-answer-with-citations-citations-doc1-doc2-mapped-to-source-documents-response-validation-with-retry-logic-tenacity-7-conversation-persistence-save-user-message-to-dynamodb-save-assistant-response-with-metadata-store-response_time-citations-filter-context-pk-useruser_id-sk-msgconv_idmsg_id" class="md-nav__link">
-    <span class="md-ellipsis">
-      ┌──────────────────────────────────────────────────────────────┐ │ 1. DOCUMENT INGESTION │ │ • PDF contracts uploaded to system │ │ • Metadata extraction (project_id, contract_type, title) │ │ • Stored in PostgreSQL contract_asmd table │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 2. TEXT EXTRACTION │ │ • PDFs converted to markdown format │ │ • Preserve document structure and headings │ │ • Store full text in PostgreSQL │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 3. CHUNKING &amp; EMBEDDING │ │ • Split documents into semantic chunks (~500 tokens) │ │ • Generate embeddings: text-embedding-3-small (OpenAI) │ │ • Vector dimension: 1536 │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 4. VECTOR DATABASE INDEXING │ │ • Index in OpenSearch contracts_oai index │ │ • Store: embedding + chunk_text + metadata │ │ • Enable kNN + BM25 hybrid search │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 5. QUERY PROCESSING │ │ • User query → embedding │ │ • Hybrid search: 70% semantic + 30% keyword │ │ • Apply filters: project_id, reference_doc_id │ │ • Return top-k chunks with relevance scores │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 6. LLM ANSWER GENERATION │ │ • Context: retrieved chunks + message history │ │ • LLM: GPT-4 generates answer with citations │ │ • Citations: [doc1], [doc2] mapped to source documents │ │ • Response validation with retry logic (Tenacity) │ └────────────────────────────┬─────────────────────────────────┘ │ ▼ ┌──────────────────────────────────────────────────────────────┐ │ 7. CONVERSATION PERSISTENCE │ │ • Save user message to DynamoDB │ │ • Save assistant response with metadata │ │ • Store response_time, citations, filter context │ │ • PK: USER#{user_id}, SK: MSG#{conv_id}#{msg_id} │ └──────────────────────────────────────────────────────────────┘
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#6-technology-stack" class="md-nav__link">
     <span class="md-ellipsis">
       6. Technology Stack
@@ -1241,18 +1145,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#frontend-technologies" class="md-nav__link">
+  <a href="#technology-stack-summary" class="md-nav__link">
     <span class="md-ellipsis">
-      Frontend Technologies
+      Technology Stack Summary
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#infrastructure-devops" class="md-nav__link">
+  <a href="#production-readiness-assessment" class="md-nav__link">
     <span class="md-ellipsis">
-      Infrastructure &amp; DevOps
+      Production Readiness Assessment
     </span>
   </a>
   
@@ -1330,26 +1234,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#11-future-enhancements" class="md-nav__link">
+  <a href="#11-future-roadmap" class="md-nav__link">
     <span class="md-ellipsis">
-      11. Future Enhancements
+      11. Future Roadmap
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="11. Future Enhancements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#roadmap" class="md-nav__link">
-    <span class="md-ellipsis">
-      Roadmap
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1359,21 +1248,6 @@
       12. Lessons Learned
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="12. Lessons Learned">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#key-takeaways" class="md-nav__link">
-    <span class="md-ellipsis">
-      Key Takeaways
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1388,18 +1262,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#project-summary" class="md-nav__link">
+  <a href="#key-achievements" class="md-nav__link">
     <span class="md-ellipsis">
-      Project Summary
+      Key Achievements
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#impact-statement" class="md-nav__link">
+  <a href="#impact" class="md-nav__link">
     <span class="md-ellipsis">
-      Impact Statement
+      Impact
     </span>
   </a>
   
@@ -1453,41 +1327,91 @@
   
 
 
-<h1 id="contramate-ai-powered-contract-management-assistant">Contramate: AI-Powered Contract Management Assistant<a class="headerlink" href="#contramate-ai-powered-contract-management-assistant" title="Permanent link">&para;</a></h1>
-<h2 id="sheikh-alam">Sheikh Alam<a class="headerlink" href="#sheikh-alam" title="Permanent link">&para;</a></h2>
-<p><strong>Capstone Project Presentation</strong></p>
+<h1 id="contramate-demo-day">Contramate: Demo Day<a class="headerlink" href="#contramate-demo-day" title="Permanent link">&para;</a></h1>
+<p><strong>Sheikh Alam</strong> | Agent Engineering Bootcamp Capstone</p>
 <hr />
 <h2 id="1-introduction">1. Introduction<a class="headerlink" href="#1-introduction" title="Permanent link">&para;</a></h2>
-<h3 id="about-contramate">About Contramate<a class="headerlink" href="#about-contramate" title="Permanent link">&para;</a></h3>
-<p>Contramate is an intelligent contract management assistant that leverages Large Language Models (LLMs), multi-agent systems, and vector databases to automate contract analysis and question-answering workflows.</p>
-<p><strong>Key Features:</strong>
-- Natural language contract querying
-- Multi-document comparison and analysis
-- Citation-backed responses with source traceability
-- Conversation memory and context management
-- Real-time document search and retrieval</p>
-<h3 id="about-the-developer">About the Developer<a class="headerlink" href="#about-the-developer" title="Permanent link">&para;</a></h3>
-<p><strong>Project Context:</strong> Agent Engineering Bootcamp Capstone Project</p>
-<p><strong>Technology Focus:</strong>
-- Multi-agent AI systems with orchestration
-- RAG (Retrieval-Augmented Generation) architecture
-- Full-stack development with modern cloud technologies
-- Production-ready deployment with Docker containerization</p>
+<table>
+<thead>
+<tr>
+<th><strong>Component</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>What</strong></td>
+<td>AI-powered contract analysis assistant using LLMs, multi-agent systems, and vector search</td>
+</tr>
+<tr>
+<td><strong>Purpose</strong></td>
+<td>Automate contract Q&amp;A, analysis, and comparison with citation-backed responses</td>
+</tr>
+<tr>
+<td><strong>Tech Focus</strong></td>
+<td>Multi-agent orchestration, RAG architecture, full-stack deployment</td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-capabilities">Key Capabilities<a class="headerlink" href="#key-capabilities" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Capability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔍 Natural Language Queries</td>
+<td>Ask questions in plain English</td>
+</tr>
+<tr>
+<td>📊 Multi-Document Analysis</td>
+<td>Compare provisions across contracts</td>
+</tr>
+<tr>
+<td>📌 Source Citations</td>
+<td>Every answer backed by document references</td>
+</tr>
+<tr>
+<td>💬 Conversation Memory</td>
+<td>Context-aware follow-up questions</td>
+</tr>
+<tr>
+<td>⚡ Real-Time Search</td>
+<td>Instant retrieval from 500+ contracts</td>
+</tr>
+</tbody>
+</table>
 <hr />
-<h2 id="2-current-challenges-in-manual-contract-management">2. Current Challenges in Manual Contract Management<a class="headerlink" href="#2-current-challenges-in-manual-contract-management" title="Permanent link">&para;</a></h2>
-<h3 id="the-problem-landscape">The Problem Landscape<a class="headerlink" href="#the-problem-landscape" title="Permanent link">&para;</a></h3>
-<p><strong>1. Time-Intensive Review Process</strong>
-- Legal teams spend 50-70% of time on contract review
-- Manual search through hundreds of pages per contract
-- Finding specific clauses requires extensive reading</p>
-<p><strong>2. Information Fragmentation</strong>
-- Key terms scattered across multiple documents
-- Difficult to compare provisions across contracts
-- No centralized knowledge base for contract history</p>
-<p><strong>3. Human Error and Inconsistency</strong>
-- Overlooked clauses due to fatigue
-- Inconsistent interpretation across reviewers
-- Lack of standardized extraction methods</p>
+<h2 id="2-problem-manual-contract-review-challenges">2. Problem: Manual Contract Review Challenges<a class="headerlink" href="#2-problem-manual-contract-review-challenges" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Challenge</th>
+<th>Impact</th>
+<th>Time Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Time-Intensive Review</strong></td>
+<td>50-70% of legal team time on manual review</td>
+<td>Hours per contract</td>
+</tr>
+<tr>
+<td><strong>Information Fragmentation</strong></td>
+<td>Key terms scattered across documents</td>
+<td>Difficult comparisons</td>
+</tr>
+<tr>
+<td><strong>Human Error</strong></td>
+<td>Overlooked clauses, inconsistent interpretation</td>
+<td>Quality risks</td>
+</tr>
+</tbody>
+</table>
 <p><strong>4. Collaboration Bottlenecks</strong>
 - Contract knowledge locked in individual experts
 - Difficult to onboard new team members
@@ -1499,223 +1423,199 @@
 <hr />
 <h2 id="3-solution-what-contramate-automates">3. Solution: What Contramate Automates<a class="headerlink" href="#3-solution-what-contramate-automates" title="Permanent link">&para;</a></h2>
 <h3 id="automated-contract-intelligence">Automated Contract Intelligence<a class="headerlink" href="#automated-contract-intelligence" title="Permanent link">&para;</a></h3>
-<p><strong>1. Instant Question Answering</strong>
-- <strong>Before:</strong> Manually search through 100+ page contracts
-- <strong>After:</strong> Ask natural language questions, get instant answers with citations
-- <strong>Impact:</strong> Reduces contract review time from hours to minutes</p>
-<p><strong>2. Multi-Document Analysis</strong>
-- <strong>Before:</strong> Open multiple PDFs, manually compare clauses
-- <strong>After:</strong> Compare payment terms, warranties, or liabilities across contracts automatically
-- <strong>Impact:</strong> Parallel analysis of 10+ contracts in seconds</p>
-<p><strong>3. Contextual Search</strong>
-- <strong>Before:</strong> Ctrl+F keyword search (misses semantic variations)
-- <strong>After:</strong> Hybrid semantic + keyword search finds relevant clauses even with different wording
-- <strong>Impact:</strong> 95%+ retrieval accuracy vs 60% with keyword-only</p>
-<p><strong>4. Source Attribution</strong>
-- <strong>Before:</strong> No way to verify AI-generated answers
-- <strong>After:</strong> Every answer includes inline citations <code>[doc1]</code> with source document references
-- <strong>Impact:</strong> Full auditability and trust in responses</p>
-<p><strong>5. Conversation Memory</strong>
-- <strong>Before:</strong> Repeat context in every query
-- <strong>After:</strong> Multi-turn conversations with full message history
-- <strong>Impact:</strong> Natural dialogue flow like talking to a legal expert</p>
-<p><strong>6. Document-Specific Filtering</strong>
-- <strong>Before:</strong> Search across all contracts (noisy results)
-- <strong>After:</strong> Filter by project, contract type, or specific documents
-- <strong>Impact:</strong> Precision targeting reduces false positives by 80%</p>
+<p><strong>1. Instant Question Answering</strong></p>
+<h2 id="3-solution-contramate-ai-system">3. Solution: Contramate AI System<a class="headerlink" href="#3-solution-contramate-ai-system" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Before</th>
+<th>After</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Contract Search</strong></td>
+<td>Manual 100+ page review</td>
+<td>Natural language Q&amp;A</td>
+<td>Hours → Minutes</td>
+</tr>
+<tr>
+<td><strong>Multi-Doc Analysis</strong></td>
+<td>Open multiple PDFs manually</td>
+<td>Automatic comparison</td>
+<td>10+ contracts in seconds</td>
+</tr>
+<tr>
+<td><strong>Search Quality</strong></td>
+<td>Keyword-only (60% accuracy)</td>
+<td>Hybrid semantic + keyword</td>
+<td>95%+ accuracy</td>
+</tr>
+<tr>
+<td><strong>Verification</strong></td>
+<td>No source tracking</td>
+<td>Citations <code>[doc1]</code> inline</td>
+<td>Full auditability</td>
+</tr>
+<tr>
+<td><strong>Context</strong></td>
+<td>Repeat info each query</td>
+<td>Conversation memory</td>
+<td>Natural dialogue</td>
+</tr>
+<tr>
+<td><strong>Filtering</strong></td>
+<td>Search all (noisy)</td>
+<td>Project/doc filtering</td>
+<td>80% less noise</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="4-system-architecture-multi-agent-design">4. System Architecture: Multi-Agent Design<a class="headerlink" href="#4-system-architecture-multi-agent-design" title="Permanent link">&para;</a></h2>
 <h3 id="agent-orchestration-flow">Agent Orchestration Flow<a class="headerlink" href="#agent-orchestration-flow" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────────────────┐
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│                         USER INTERFACE                          │
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│              Streamlit UI / Next.js Frontend                    │
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>└────────────────────────────┬────────────────────────────────────┘
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                             │
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                             ▼
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>┌─────────────────────────────────────────────────────────────────┐
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│                      FASTAPI BACKEND                            │
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│                    Chat Controller (REST API)                   │
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>└────────────────────────────┬────────────────────────────────────┘
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>                             │
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                             ▼
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>┌─────────────────────────────────────────────────────────────────┐
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│                  ORCHESTRATOR AGENT (Main)                      │
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│  • Receives user query + message history + filters              │
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│  • Coordinates workflow between specialized agents              │
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│  • Returns final response with citations                        │
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>└──────┬──────────────────────┬──────────────────────┬───────────┘
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>       │                      │                      │
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>       ▼                      ▼                      ▼
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>┌─────────────┐      ┌─────────────┐       ┌─────────────┐
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   QUERY     │      │    TOOL     │       │   ANSWER    │
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  REWRITER   │      │  EXECUTOR   │       │  CRITIQUE   │
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   AGENT     │      │   AGENT     │       │   AGENT     │
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>└─────────────┘      └──────┬──────┘       └─────────────┘
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>                            │
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>                            ▼
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>              ┌─────────────────────────┐
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>              │  TALK TO CONTRACT AGENT │
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>              │  (Production: Vanilla)  │
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>              └────────────┬────────────┘
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>                           │
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>                           ▼
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>              ┌────────────────────────────────┐
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>              │        TOOL LAYER              │
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>              │  • hybrid_search               │
-</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>              │  • search_by_project           │
-</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>              │  • search_by_document          │
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>              │  • compare_filtered_documents  │
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>              │  • search_similar_documents    │
-</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>              └────────────┬───────────────────┘
-</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>                           │
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>           ┌───────────────┼────────────────┐
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>           ▼               ▼                ▼
-</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ┌──────────┐   ┌──────────────┐  ┌──────────┐
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    │OpenSearch│   │  PostgreSQL  │  │ DynamoDB │
-</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    │ (Vector) │   │  (Metadata)  │  │(Messages)│
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    └──────────┘   └──────────────┘  └──────────┘
-</span></code></pre></div>
-<h3 id="agent-responsibilities">Agent Responsibilities<a class="headerlink" href="#agent-responsibilities" title="Permanent link">&para;</a></h3>
-<p><strong>1. Orchestrator Agent</strong>
-- Entry point for all user queries
-- Manages conversation flow
-- Delegates to specialized agents
-- Aggregates final response</p>
-<p><strong>2. Query Rewriter Agent</strong>
-- Contextualizes user queries with conversation history
-- Expands ambiguous questions
-- Optimizes for retrieval performance</p>
-<p><strong>3. Tool Executor Agent</strong>
-- Selects appropriate tools via LLM function calling
-- Executes searches and comparisons
-- Returns structured results</p>
-<p><strong>4. Talk To Contract Agent (Vanilla)</strong>
-- Core Q&amp;A engine with OpenAI function calling
-- Hybrid search integration
-- Citation generation with validation
-- Retry logic for response reliability</p>
-<p><strong>5. Answer Critique Agent</strong>
-- Evaluates response quality
-- Suggests improvements
-- Ensures citation accuracy</p>
+<pre class="mermaid"><code>graph TD
+    A[USER INTERFACE&lt;br/&gt;Streamlit UI / Next.js Frontend] --&gt; B[FASTAPI BACKEND&lt;br/&gt;Chat Controller REST API]
+    B --&gt; C[ORCHESTRATOR AGENT Main]
+    C --&gt; |"Receives query + history + filters"| C
+    C --&gt; D[Query Rewriter Agent]
+    C --&gt; E[Tool Executor Agent]
+    C --&gt; F[Answer Critique Agent]
+
+    E --&gt; G[Talk to Contract Agent&lt;br/&gt;Production: Vanilla]
+
+    G --&gt; H[TOOL LAYER]
+    H --&gt; |hybrid_search| H
+    H --&gt; |search_by_project| H
+    H --&gt; |search_by_document| H
+    H --&gt; |compare_filtered_documents| H
+    H --&gt; |search_similar_documents| H
+
+    H --&gt; I[(OpenSearch&lt;br/&gt;Vector DB)]
+    H --&gt; J[(PostgreSQL&lt;br/&gt;Metadata)]
+    H --&gt; K[(DynamoDB&lt;br/&gt;Messages)]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e6
+    style C fill:#f3e5f5
+    style D fill:#e8f5e9
+    style E fill:#e8f5e9
+    style F fill:#e8f5e9
+    style G fill:#fff9c4
+    style H fill:#fce4ec
+    style I fill:#e0f2f1
+    style J fill:#e0f2f1
+    style K fill:#e0f2f1</code></pre>
+<h3 id="agent-roles">Agent Roles<a class="headerlink" href="#agent-roles" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Orchestrator</strong></td>
+<td>Entry point, manages flow, delegates tasks, aggregates response</td>
+</tr>
+<tr>
+<td><strong>Query Rewriter</strong></td>
+<td>Contextualizes queries with history, expands ambiguous questions</td>
+</tr>
+<tr>
+<td><strong>Tool Executor</strong></td>
+<td>Selects tools via function calling, executes searches</td>
+</tr>
+<tr>
+<td><strong>Talk To Contract</strong></td>
+<td>Core Q&amp;A engine, hybrid search, citation generation, retry logic</td>
+</tr>
+<tr>
+<td><strong>Answer Critique</strong></td>
+<td>Evaluates quality, suggests improvements, validates citations</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="5-document-processing-workflow">5. Document Processing Workflow<a class="headerlink" href="#5-document-processing-workflow" title="Permanent link">&para;</a></h2>
 <h3 id="end-to-end-data-pipeline">End-to-End Data Pipeline<a class="headerlink" href="#end-to-end-data-pipeline" title="Permanent link">&para;</a></h3>
-<h2 id="1-document-ingestion-pdf-contracts-uploaded-to-system-metadata-extraction-project_id-contract_type-title-stored-in-postgresql-contract_asmd-table-2-text-extraction-pdfs-converted-to-markdown-format-preserve-document-structure-and-headings-store-full-text-in-postgresql-3-chunking-embedding-split-documents-into-semantic-chunks-500-tokens-generate-embeddings-text-embedding-3-small-openai-vector-dimension-1536-4-vector-database-indexing-index-in-opensearch-contracts_oai-index-store-embedding-chunk_text-metadata-enable-knn-bm25-hybrid-search-5-query-processing-user-query-embedding-hybrid-search-70-semantic-30-keyword-apply-filters-project_id-reference_doc_id-return-top-k-chunks-with-relevance-scores-6-llm-answer-generation-context-retrieved-chunks-message-history-llm-gpt-4-generates-answer-with-citations-citations-doc1-doc2-mapped-to-source-documents-response-validation-with-retry-logic-tenacity-7-conversation-persistence-save-user-message-to-dynamodb-save-assistant-response-with-metadata-store-response_time-citations-filter-context-pk-useruser_id-sk-msgconv_idmsg_id"><div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>┌──────────────────────────────────────────────────────────────┐
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>│                  1. DOCUMENT INGESTION                       │
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│  • PDF contracts uploaded to system                          │
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│  • Metadata extraction (project_id, contract_type, title)    │
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│  • Stored in PostgreSQL contract_asmd table                  │
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>└────────────────────────────┬─────────────────────────────────┘
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>                             │
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>                             ▼
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>┌──────────────────────────────────────────────────────────────┐
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│                  2. TEXT EXTRACTION                          │
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>│  • PDFs converted to markdown format                         │
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>│  • Preserve document structure and headings                  │
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>│  • Store full text in PostgreSQL                             │
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>└────────────────────────────┬─────────────────────────────────┘
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>                             │
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>                             ▼
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>┌──────────────────────────────────────────────────────────────┐
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│                  3. CHUNKING &amp; EMBEDDING                     │
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>│  • Split documents into semantic chunks (~500 tokens)        │
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>│  • Generate embeddings: text-embedding-3-small (OpenAI)      │
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>│  • Vector dimension: 1536                                    │
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>└────────────────────────────┬─────────────────────────────────┘
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>                             │
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>                             ▼
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>┌──────────────────────────────────────────────────────────────┐
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>│              4. VECTOR DATABASE INDEXING                     │
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>│  • Index in OpenSearch contracts_oai index                   │
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>│  • Store: embedding + chunk_text + metadata                  │
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>│  • Enable kNN + BM25 hybrid search                           │
-</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>└────────────────────────────┬─────────────────────────────────┘
-</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>                             │
-</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>                             ▼
-</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>┌──────────────────────────────────────────────────────────────┐
-</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>│                  5. QUERY PROCESSING                         │
-</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>│  • User query → embedding                                    │
-</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>│  • Hybrid search: 70% semantic + 30% keyword                 │
-</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>│  • Apply filters: project_id, reference_doc_id               │
-</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>│  • Return top-k chunks with relevance scores                 │
-</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>└────────────────────────────┬─────────────────────────────────┘
-</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>                             │
-</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>                             ▼
-</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>┌──────────────────────────────────────────────────────────────┐
-</span><span id="__span-1-43"><a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>│                  6. LLM ANSWER GENERATION                    │
-</span><span id="__span-1-44"><a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>│  • Context: retrieved chunks + message history               │
-</span><span id="__span-1-45"><a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>│  • LLM: GPT-4 generates answer with citations                │
-</span><span id="__span-1-46"><a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>│  • Citations: [doc1], [doc2] mapped to source documents      │
-</span><span id="__span-1-47"><a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>│  • Response validation with retry logic (Tenacity)           │
-</span><span id="__span-1-48"><a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>└────────────────────────────┬─────────────────────────────────┘
-</span><span id="__span-1-49"><a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>                             │
-</span><span id="__span-1-50"><a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>                             ▼
-</span><span id="__span-1-51"><a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>┌──────────────────────────────────────────────────────────────┐
-</span><span id="__span-1-52"><a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>│              7. CONVERSATION PERSISTENCE                     │
-</span><span id="__span-1-53"><a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>│  • Save user message to DynamoDB                             │
-</span><span id="__span-1-54"><a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>│  • Save assistant response with metadata                     │
-</span><span id="__span-1-55"><a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>│  • Store response_time, citations, filter context            │
-</span><span id="__span-1-56"><a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>│  • PK: USER#{user_id}, SK: MSG#{conv_id}#{msg_id}           │
-</span><span id="__span-1-57"><a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>└──────────────────────────────────────────────────────────────┘
-</span></code></pre></div><a class="headerlink" href="#1-document-ingestion-pdf-contracts-uploaded-to-system-metadata-extraction-project_id-contract_type-title-stored-in-postgresql-contract_asmd-table-2-text-extraction-pdfs-converted-to-markdown-format-preserve-document-structure-and-headings-store-full-text-in-postgresql-3-chunking-embedding-split-documents-into-semantic-chunks-500-tokens-generate-embeddings-text-embedding-3-small-openai-vector-dimension-1536-4-vector-database-indexing-index-in-opensearch-contracts_oai-index-store-embedding-chunk_text-metadata-enable-knn-bm25-hybrid-search-5-query-processing-user-query-embedding-hybrid-search-70-semantic-30-keyword-apply-filters-project_id-reference_doc_id-return-top-k-chunks-with-relevance-scores-6-llm-answer-generation-context-retrieved-chunks-message-history-llm-gpt-4-generates-answer-with-citations-citations-doc1-doc2-mapped-to-source-documents-response-validation-with-retry-logic-tenacity-7-conversation-persistence-save-user-message-to-dynamodb-save-assistant-response-with-metadata-store-response_time-citations-filter-context-pk-useruser_id-sk-msgconv_idmsg_id" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph TB
+    A["1. DOCUMENT INGESTION&lt;br/&gt;• PDF contracts uploaded&lt;br/&gt;• Metadata extraction&lt;br/&gt;• Stored in PostgreSQL"] 
+    B["2. TEXT EXTRACTION&lt;br/&gt;• PDFs to markdown&lt;br/&gt;• Preserve structure&lt;br/&gt;• Store full text"]
+    C["3. CHUNKING &amp; EMBEDDING&lt;br/&gt;• Semantic chunks ~500 tokens&lt;br/&gt;• text-embedding-3-small&lt;br/&gt;• Vector dimension: 1536"]
+    D["4. VECTOR DATABASE INDEXING&lt;br/&gt;• Index in OpenSearch&lt;br/&gt;• embedding + text + metadata&lt;br/&gt;• Enable kNN + BM25"]
+    E["5. QUERY PROCESSING&lt;br/&gt;• User query → embedding&lt;br/&gt;• Hybrid: 70% semantic + 30% keyword&lt;br/&gt;• Apply filters&lt;br/&gt;• Top-k chunks"]
+    F["6. LLM ANSWER GENERATION&lt;br/&gt;• Context: chunks + history&lt;br/&gt;• GPT-4 generates answer&lt;br/&gt;• Citations mapped&lt;br/&gt;• Validation with retry"]
+    G["7. CONVERSATION PERSISTENCE&lt;br/&gt;• Save to DynamoDB&lt;br/&gt;• User &amp; assistant messages&lt;br/&gt;• Response time, citations&lt;br/&gt;• PK: USER# SK: MSG#"]
+
+    A --&gt; B
+    B --&gt; C
+    C --&gt; D
+    D --&gt; E
+    E --&gt; F
+    F --&gt; G
+
+    style A fill:#e3f2fd
+    style B fill:#f3e5f5
+    style C fill:#fff9c4
+    style D fill:#e8f5e9
+    style E fill:#fce4ec
+    style F fill:#fff4e6
+    style G fill:#e0f2f1</code></pre>
+<hr />
 <h2 id="6-technology-stack">6. Technology Stack<a class="headerlink" href="#6-technology-stack" title="Permanent link">&para;</a></h2>
 <h3 id="backend-technologies">Backend Technologies<a class="headerlink" href="#backend-technologies" title="Permanent link">&para;</a></h3>
 <p><strong>Core Framework</strong>
 - <strong>Python 3.12</strong> - Main programming language
 - <strong>FastAPI</strong> - High-performance REST API framework
-- <strong>Uvicorn</strong> - ASGI server with async support
-- <strong>Pydantic</strong> - Data validation and settings management</p>
-<p><strong>AI/ML Components</strong>
-- <strong>OpenAI GPT-4</strong> - Large language model for reasoning
-- <strong>text-embedding-3-small</strong> - Document embeddings (1536 dim)
-- <strong>Tenacity</strong> - Retry logic for LLM reliability
-- <strong>pydantic-ai</strong> - Type-safe agent framework</p>
-<p><strong>Vector &amp; Search</strong>
-- <strong>OpenSearch 2.11.1</strong> - Vector database with kNN search
-- <strong>Hybrid Search</strong> - Combines semantic + BM25 keyword search
-- <strong>OpenSearch Dashboards</strong> - Search analytics UI</p>
-<p><strong>Databases</strong>
-- <strong>PostgreSQL 15</strong> - Contract metadata and relational data
-- <strong>DynamoDB Local</strong> - Conversation and message persistence
-- <strong>SQLModel</strong> - Type-safe ORM for PostgreSQL</p>
-<p><strong>API &amp; Services</strong>
-- <strong>neopipe</strong> - Result types (Ok/Err) for error handling
-- <strong>aioboto3</strong> - Async AWS SDK for DynamoDB
-- <strong>loguru</strong> - Structured logging throughout</p>
-<h3 id="frontend-technologies">Frontend Technologies<a class="headerlink" href="#frontend-technologies" title="Permanent link">&para;</a></h3>
-<p><strong>UI Framework</strong>
-- <strong>Streamlit 1.40.0</strong> - Current production UI
-- <strong>Next.js 15</strong> - Future frontend (in development)
-- <strong>TypeScript</strong> - Type-safe frontend code
-- <strong>Tailwind CSS v4</strong> - Utility-first styling
-- <strong>shadcn/ui</strong> - Component library</p>
-<p><strong>Package Management</strong>
-- <strong>uv</strong> - Fast Python package manager
-- <strong>pnpm</strong> - Efficient Node.js package manager</p>
-<h3 id="infrastructure-devops">Infrastructure &amp; DevOps<a class="headerlink" href="#infrastructure-devops" title="Permanent link">&para;</a></h3>
-<p><strong>Containerization</strong>
-- <strong>Docker</strong> - Application containerization
-- <strong>Docker Compose</strong> - Multi-service orchestration
-- Services: Backend, UI, PostgreSQL, DynamoDB, OpenSearch</p>
-<p><strong>Architecture</strong>
-- <strong>Clean Architecture</strong> - Separation of concerns
-  - <code>api/interfaces/controllers</code> - Endpoint handlers
-  - <code>services</code> - Business logic with Result types
-  - <code>dbs/adapters</code> - Database abstraction layer
-  - <code>core/agents</code> - Multi-agent AI system
-  - <code>llm</code> - LLM client abstraction (OpenAI + Azure)</p>
-<p><strong>Deployment</strong>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># docker-compose.yml structure</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">backend</span><span class="p">:</span><span class="w">    </span><span class="c1"># FastAPI (Port 8000)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">ui</span><span class="p">:</span><span class="w">         </span><span class="c1"># Streamlit (Port 8501)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">postgres</span><span class="p">:</span><span class="w">   </span><span class="c1"># PostgreSQL (Port 5432)</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">dynamodb</span><span class="p">:</span><span class="w">   </span><span class="c1"># DynamoDB Local (Port 8001)</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">opensearch</span><span class="p">:</span><span class="w"> </span><span class="c1"># OpenSearch (Port 9200)</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="nt">dashboards</span><span class="p">:</span><span class="w"> </span><span class="c1"># OpenSearch UI (Port 5601)</span>
-</span></code></pre></div></p>
-<p><strong>Summary:</strong></p>
+- <strong>Uvicorn</strong> - ASGI server with async support</p>
+<h3 id="technology-stack-summary">Technology Stack Summary<a class="headerlink" href="#technology-stack-summary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technologies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Backend</strong></td>
+<td>FastAPI, Pydantic, neopipe (Result types), aioboto3, loguru</td>
+</tr>
+<tr>
+<td><strong>AI/ML</strong></td>
+<td>OpenAI GPT-4, text-embedding-3-small, Tenacity retry, pydantic-ai</td>
+</tr>
+<tr>
+<td><strong>Search</strong></td>
+<td>OpenSearch 2.11.1, kNN + BM25 hybrid, OpenSearch Dashboards</td>
+</tr>
+<tr>
+<td><strong>Databases</strong></td>
+<td>PostgreSQL 15 (SQLModel ORM), DynamoDB Local</td>
+</tr>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>Streamlit 1.40 (current), Next.js 15 + TypeScript + Tailwind v4 (future)</td>
+</tr>
+<tr>
+<td><strong>Package Mgmt</strong></td>
+<td>uv (Python), pnpm (Node.js)</td>
+</tr>
+<tr>
+<td><strong>Infrastructure</strong></td>
+<td>Docker Compose, Clean Architecture (API → Services → Adapters → Agents)</td>
+</tr>
+<tr>
+<td><strong>Ports</strong></td>
+<td>FastAPI:8000, Streamlit:8501, Postgres:5432, Dynamo:8001, OpenSearch:9200</td>
+</tr>
+</tbody>
+</table>
+<h3 id="production-readiness-assessment">Production Readiness Assessment<a class="headerlink" href="#production-readiness-assessment" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1777,52 +1677,66 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Current Status:</strong> <strong>Prototype/MVP Ready</strong> ✅
-<strong>Production Ready:</strong> ❌ (Estimated 6-9 months of hardening needed)</p>
+<p><strong>Status:</strong> Prototype/MVP Ready ✅ | Production Ready: ❌ (6-9 months hardening needed)</p>
 <hr />
 <h2 id="8-demonstration-flow">8. Demonstration Flow<a class="headerlink" href="#8-demonstration-flow" title="Permanent link">&para;</a></h2>
-<p><strong>Step 1: Document Selection</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>UI: User selects &quot;HealthGate Hosting Agreement&quot; from dropdown
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>→ Stored in conversation filters
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>→ Document metadata fetched from PostgreSQL
-</span></code></pre></div></p>
-<p><strong>Step 2: Initial Query</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>User: &quot;What are the payment terms?&quot;
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>→ Query embedding generated
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>→ Hybrid search in OpenSearch (filtered to selected document)
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>→ Top 5 relevant chunks retrieved
-</span></code></pre></div></p>
-<p><strong>Step 3: LLM Response</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Agent: &quot;The payment terms include multiple staged payments:
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>- $100,000 due on 30 January 1998
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>- $150,000 due on 6 February 1998
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>...
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Invoices are payable within 60 days of receipt [doc1].&quot;
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>Citations: {&quot;doc1&quot;: &quot;HEALTHGATEDATACORP_11_24_1999.pdf&quot;}
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>Response Time: 7.03s
-</span></code></pre></div></p>
-<p><strong>Step 4: Follow-Up Question (With Context)</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>User: &quot;What happens if payment is late?&quot;
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>→ Message history includes previous Q&amp;A
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>→ Agent understands &quot;payment&quot; refers to contract terms already discussed
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>→ Retrieves clauses about late payment penalties
-</span></code></pre></div></p>
-<p><strong>Step 5: Multi-Document Comparison</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>User: &quot;Compare payment terms between the contracts.&quot;
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>→ Filters updated to include Contract A + Contract B
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>→ Tool: compare_filtered_documents
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>→ Returns side-by-side comparison with citations for each
-</span></code></pre></div></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Action</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Select Document</strong></td>
+<td>User picks "HealthGate Hosting Agreement"</td>
+<td>Filters stored, metadata fetched from PostgreSQL</td>
+</tr>
+<tr>
+<td><strong>2. Initial Query</strong></td>
+<td>"What are the payment terms?"</td>
+<td>Query embedded → Hybrid search → Top 5 chunks retrieved</td>
+</tr>
+<tr>
+<td><strong>3. LLM Response</strong></td>
+<td>Payment terms listed with citations</td>
+<td><code>[doc1]</code> citations mapped, Response time: 7.03s</td>
+</tr>
+<tr>
+<td><strong>4. Follow-Up</strong></td>
+<td>"What happens if payment is late?"</td>
+<td>History provides context, retrieves penalty clauses</td>
+</tr>
+<tr>
+<td><strong>5. Comparison</strong></td>
+<td>"Compare payment terms between contracts"</td>
+<td><code>compare_filtered_documents</code> tool, side-by-side results</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="9-challenges-overcome">9. Challenges Overcome<a class="headerlink" href="#9-challenges-overcome" title="Permanent link">&para;</a></h2>
 <h3 id="technical-problem-solving">Technical Problem-Solving<a class="headerlink" href="#technical-problem-solving" title="Permanent link">&para;</a></h3>
-<p><strong>1. Pydantic-AI Structured Output Bug</strong>
-- <strong>Problem:</strong> Citation validation failed with message history
-  - Without history: ✅ <code>{"doc1": "HEALTHGATEDATACORP.pdf"}</code>
-  - With history: ❌ <code>{"doc1": 1}</code> or <code>{"0": "doc1"}</code>
-- <strong>Solution:</strong> Bypassed pydantic-ai, implemented vanilla OpenAI client with manual JSON validation
-- <strong>Impact:</strong> 100% reliability vs 30% success rate</p>
+<table>
+<thead>
+<tr>
+<th>Challenge</th>
+<th>Issue</th>
+<th>Solution</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pydantic-AI Bug</strong></td>
+<td>Citation validation failed with history: <code>{"doc1": 1}</code> instead of <code>{"doc1": "file.pdf"}</code></td>
+<td>Vanilla OpenAI client with manual JSON validation</td>
+<td>100% reliability (vs 30%)</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="10-results-impact">10. Results &amp; Impact<a class="headerlink" href="#10-results-impact" title="Permanent link">&para;</a></h2>
 <h3 id="quantitative-outcomes">Quantitative Outcomes<a class="headerlink" href="#quantitative-outcomes" title="Permanent link">&para;</a></h3>
@@ -1830,136 +1744,206 @@
 <thead>
 <tr>
 <th>Metric</th>
-<th>Before (Manual)</th>
-<th>After (Contramate)</th>
+<th>Before</th>
+<th>After</th>
 <th>Improvement</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Contract review time</td>
+<td><strong>Review Time</strong></td>
 <td>2-4 hours</td>
-<td>5-10 minutes</td>
-<td><strong>95% reduction</strong></td>
+<td>5-10 min</td>
+<td>95% ↓</td>
 </tr>
 <tr>
-<td>Multi-doc comparison</td>
-<td>30+ minutes</td>
-<td>30 seconds</td>
-<td><strong>98% reduction</strong></td>
+<td><strong>Multi-Doc Compare</strong></td>
+<td>30+ min</td>
+<td>30 sec</td>
+<td>98% ↓</td>
 </tr>
 <tr>
-<td>Answer accuracy</td>
+<td><strong>Accuracy</strong></td>
 <td>60% (keyword)</td>
 <td>95% (hybrid)</td>
-<td><strong>+35% improvement</strong></td>
+<td>+35%</td>
 </tr>
 <tr>
-<td>Source attribution</td>
+<td><strong>Citations</strong></td>
 <td>Manual lookup</td>
-<td>Automatic citations</td>
-<td><strong>100% coverage</strong></td>
+<td>Auto-generated</td>
+<td>100% coverage</td>
 </tr>
 <tr>
-<td>Knowledge retention</td>
+<td><strong>Knowledge</strong></td>
 <td>Expert-dependent</td>
-<td>Conversation history</td>
-<td><strong>Persistent</strong></td>
+<td>Persistent history</td>
+<td>Always available</td>
 </tr>
 </tbody>
 </table>
 <h3 id="qualitative-benefits">Qualitative Benefits<a class="headerlink" href="#qualitative-benefits" title="Permanent link">&para;</a></h3>
-<p><strong>For Legal Teams</strong>
-- Instant access to contract knowledge without reading full documents
-- Confidence in AI answers through citation backing
-- Reduced cognitive load from repetitive contract searches</p>
-<p><strong>For Organizations</strong>
-- Democratized contract knowledge across teams
-- Audit trail for compliance and governance
-- Scalable to thousands of contracts without linear cost increase</p>
-<p><strong>For Developers (Learning Outcomes)</strong>
-- Production-grade multi-agent system design
-- RAG architecture with vector databases
-- Error handling patterns for LLM reliability
-- Full-stack integration from UI to database</p>
+<table>
+<thead>
+<tr>
+<th>Stakeholder</th>
+<th>Benefits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Legal Teams</strong></td>
+<td>Instant contract knowledge, citation confidence, reduced cognitive load</td>
+</tr>
+<tr>
+<td><strong>Organizations</strong></td>
+<td>Democratized knowledge, audit trails, scalable without linear costs</td>
+</tr>
+<tr>
+<td><strong>Developers</strong></td>
+<td>Multi-agent design patterns, RAG architecture, LLM reliability techniques</td>
+</tr>
+</tbody>
+</table>
 <hr />
-<h2 id="11-future-enhancements">11. Future Enhancements<a class="headerlink" href="#11-future-enhancements" title="Permanent link">&para;</a></h2>
-<h3 id="roadmap">Roadmap<a class="headerlink" href="#roadmap" title="Permanent link">&para;</a></h3>
-<p><strong>Phase 1: Advanced Analytics (Q1 2025)</strong>
-- Contract risk scoring based on clause patterns
-- Anomaly detection for non-standard terms
-- Dashboard for contract portfolio insights</p>
-<p><strong>Phase 2: Document Generation (Q2 2025)</strong>
-- Generate contract summaries
-- Extract key terms into structured tables
-- Auto-populate contract templates</p>
-<p><strong>Phase 3: Multi-Language Support (Q3 2025)</strong>
-- Translation layer for non-English contracts
-- Multilingual embedding models
-- Cross-language contract comparison</p>
-<p><strong>Phase 4: Enterprise Features (Q4 2025)</strong>
-- Role-based access control (RBAC)
-- SSO integration (OAuth, SAML)
-- Audit logging for compliance
-- API rate limiting and usage analytics</p>
-<p><strong>Phase 5: Advanced AI Capabilities</strong>
-- Fine-tuned models on legal domain
-- Graph-based contract relationship mapping
-- Predictive analytics for contract negotiation outcomes</p>
+<h2 id="11-future-roadmap">11. Future Roadmap<a class="headerlink" href="#11-future-roadmap" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Timeline</th>
+<th>Features</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Advanced Analytics</strong></td>
+<td>Q1 2025</td>
+<td>Risk scoring, anomaly detection, portfolio dashboard</td>
+</tr>
+<tr>
+<td><strong>Document Generation</strong></td>
+<td>Q2 2025</td>
+<td>Auto-summaries, term extraction, template population</td>
+</tr>
+<tr>
+<td><strong>Multi-Language</strong></td>
+<td>Q3 2025</td>
+<td>Translation layer, multilingual embeddings, cross-language comparison</td>
+</tr>
+<tr>
+<td><strong>Enterprise</strong></td>
+<td>Q4 2025</td>
+<td>RBAC, SSO (OAuth/SAML), audit logging, rate limiting</td>
+</tr>
+<tr>
+<td><strong>Advanced AI</strong></td>
+<td>2026+</td>
+<td>Fine-tuned legal models, graph relationships, predictive analytics</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="12-lessons-learned">12. Lessons Learned<a class="headerlink" href="#12-lessons-learned" title="Permanent link">&para;</a></h2>
-<h3 id="key-takeaways">Key Takeaways<a class="headerlink" href="#key-takeaways" title="Permanent link">&para;</a></h3>
-<p><strong>1. Always Validate LLM Outputs</strong>
-- LLMs are non-deterministic; structured outputs can fail
-- Implement retry logic with exponential backoff
-- Use custom validation errors to trigger retries selectively</p>
-<p><strong>2. Hybrid Search &gt; Semantic-Only</strong>
-- Pure semantic search misses exact keyword matches
-- Combining kNN + BM25 gives best of both worlds
-- 70/30 split (semantic/keyword) works well in practice</p>
-<p><strong>3. Message History is Critical</strong>
-- Users expect conversational context
-- Naively passing history can break structured outputs
-- Test agents with and without history during development</p>
-<p><strong>4. Citation Trust is Non-Negotiable</strong>
-- Users won't adopt AI systems without source attribution
-- Inline citations must map to actual documents, not placeholders
-- Validation layer prevents hallucinated references</p>
-<p><strong>5. Clean Architecture Pays Off</strong>
-- Separating API, services, and data layers enables rapid changes
-- Result types (Ok/Err) make error handling explicit
-- Factory patterns allow easy testing and dependency injection</p>
-<p><strong>6. Docker Simplifies Deployment</strong>
-- Single <code>docker-compose up</code> starts entire stack
-- Environment-specific configs via <code>.envs/docker.env</code>
-- Internal networking (backend:8000) avoids localhost issues</p>
-<p><strong>7. User Experience Details Matter</strong>
-- Response time display builds user trust
-- Document context visibility reduces confusion
-- Expandable sections prevent UI clutter</p>
+<table>
+<thead>
+<tr>
+<th>Lesson</th>
+<th>Insight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Validate LLM Outputs</strong></td>
+<td>Non-deterministic failures require retry logic with exponential backoff</td>
+</tr>
+<tr>
+<td><strong>Hybrid Search Wins</strong></td>
+<td>kNN + BM25 (70/30 split) outperforms semantic-only search</td>
+</tr>
+<tr>
+<td><strong>History Management</strong></td>
+<td>Conversational context critical but can break structured outputs</td>
+</tr>
+<tr>
+<td><strong>Citation Trust</strong></td>
+<td>Source attribution non-negotiable; validate to prevent hallucinations</td>
+</tr>
+<tr>
+<td><strong>Clean Architecture</strong></td>
+<td>Result types, factories, layer separation enable rapid iteration</td>
+</tr>
+<tr>
+<td><strong>Docker Deployment</strong></td>
+<td><code>docker-compose up</code> simplifies multi-service orchestration</td>
+</tr>
+<tr>
+<td><strong>UX Details</strong></td>
+<td>Response time, context visibility, expandable sections build trust</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="13-conclusion">13. Conclusion<a class="headerlink" href="#13-conclusion" title="Permanent link">&para;</a></h2>
-<h3 id="project-summary">Project Summary<a class="headerlink" href="#project-summary" title="Permanent link">&para;</a></h3>
-<p>Contramate demonstrates that <strong>AI-powered contract management is not just feasible—it's transformative</strong>. By combining:</p>
-<ul>
-<li><strong>Multi-agent orchestration</strong> for complex reasoning workflows</li>
-<li><strong>Hybrid vector search</strong> for accurate information retrieval</li>
-<li><strong>Citation-backed responses</strong> for trust and auditability</li>
-<li><strong>Conversation persistence</strong> for natural interactions</li>
-<li><strong>Production-ready engineering</strong> with retry logic, validation, and clean architecture</li>
-</ul>
-<p>...we've built a system that <strong>reduces contract review time by 95%</strong> while <strong>maintaining high accuracy and full traceability</strong>.</p>
-<h3 id="impact-statement">Impact Statement<a class="headerlink" href="#impact-statement" title="Permanent link">&para;</a></h3>
-<p>This project showcases:
-- <strong>Technical depth</strong>: Multi-agent systems, RAG architecture, vector databases
-- <strong>Real-world applicability</strong>: Solves genuine pain points in legal/procurement workflows
-- <strong>Production readiness</strong>: Docker deployment, error handling, monitoring
-- <strong>Full-stack expertise</strong>: Backend services, databases, UI, DevOps</p>
-<p>Contramate is not just a proof-of-concept—it's a <strong>deployable solution</strong> ready to scale to enterprise contract portfolios.</p>
+<h3 id="key-achievements">Key Achievements<a class="headerlink" href="#key-achievements" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Time Reduction</strong></td>
+<td>95% (hours → minutes)</td>
+</tr>
+<tr>
+<td><strong>Search Accuracy</strong></td>
+<td>95%+ (vs 60% keyword-only)</td>
+</tr>
+<tr>
+<td><strong>Contracts Indexed</strong></td>
+<td>500+ documents</td>
+</tr>
+<tr>
+<td><strong>Architecture</strong></td>
+<td>Multi-agent orchestration + RAG + Clean Architecture</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>MVP Ready ✅, Enterprise: 6-9 months</td>
+</tr>
+</tbody>
+</table>
+<h3 id="impact">Impact<a class="headerlink" href="#impact" title="Permanent link">&para;</a></h3>
+<p><strong>Contramate proves AI-powered contract management is transformative</strong>, combining multi-agent systems, hybrid vector search, citation-backed responses, and production-ready engineering to deliver a <strong>deployable solution</strong> that showcases technical depth, real-world applicability, and full-stack expertise.</p>
+<hr />
 <hr />
 <h2 id="thank-you">Thank You<a class="headerlink" href="#thank-you" title="Permanent link">&para;</a></h2>
 <h3 id="contact-resources">Contact &amp; Resources<a class="headerlink" href="#contact-resources" title="Permanent link">&para;</a></h3>
-<p><strong>Project Repository:</strong> [Link to GitHub]  </p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GitHub Repository</strong></td>
+<td><a href="https://github.com/MrDataPsycho/contra.mate">github.com/MrDataPsycho/contra.mate</a></td>
+</tr>
+<tr>
+<td><strong>LinkedIn</strong></td>
+<td><a href="https://www.linkedin.com/in/mr-data-psycho/">linkedin.com/in/sheikh-alam-data</a></td>
+</tr>
+<tr>
+<td><strong>Documentation</strong></td>
+<td><a href="https://mrdatapsycho.github.io/contra.mate/">mrdatapsycho.github.io/contra.mate</a></td>
+</tr>
+</tbody>
+</table>
 <hr />
 <p><em>Presented at Agent Engineering Bootcamp Capstone Day</em><br />
 <em>Date: 2025-10-24</em><br />
