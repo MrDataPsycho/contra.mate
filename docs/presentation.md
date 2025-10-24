@@ -280,9 +280,9 @@ graph TB
 
 | Resource | Link |
 |----------|------|
-| **GitHub Repository** | [github.com/MrDataPsycho/contra.mate](https://github.com/MrDataPsycho/contra.mate) |
-| **LinkedIn** | [linkedin.com/in/sheikh-alam-data](https://www.linkedin.com/in/mr-data-psycho/) |
-| **Documentation** | [mrdatapsycho.github.io/contra.mate](https://mrdatapsycho.github.io/contra.mate/) |
+| **GitHub Repository** | [https://github.com/MrDataPsycho/contra.mate](https://github.com/MrDataPsycho/contra.mate) |
+| **LinkedIn** | [https://www.linkedin.com/in/mr-data-psycho/](https://www.linkedin.com/in/mr-data-psycho/) |
+| **Documentation** | [https://mrdatapsycho.github.io/contra.mate](https://mrdatapsycho.github.io/contra.mate/) |
 
 ---
 
