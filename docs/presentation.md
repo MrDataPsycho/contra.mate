@@ -106,9 +106,10 @@ graph TD
 |-------|----------------|
 | **Orchestrator** | Entry point, manages flow, delegates tasks, aggregates response |
 | **Query Rewriter** | Contextualizes queries with history, expands ambiguous questions |
-| **Tool Executor** | Selects tools via function calling, executes searches |
 | **Talk To Contract** | Core Q&A engine, hybrid search, citation generation, retry logic |
 | **Answer Critique** | Evaluates quality, suggests improvements, validates citations |
+| **Metadata Insights** | Analyzes document metadata, identifies key attributes, suggests improvements |
+
 
 ---
 
@@ -151,7 +152,6 @@ graph TB
 **Core Framework**
 - **Python 3.12** - Main programming language
 - **FastAPI** - High-performance REST API framework
-- **Uvicorn** - ASGI server with async support
 ### Technology Stack Summary
 
 | Layer | Technologies |
@@ -161,26 +161,7 @@ graph TB
 | **Search** | OpenSearch 2.11.1, kNN + BM25 hybrid, OpenSearch Dashboards |
 | **Databases** | PostgreSQL 15 (SQLModel ORM), DynamoDB Local |
 | **Frontend** | Streamlit 1.40 (current), Next.js 15 + TypeScript + Tailwind v4 (future) |
-| **Package Mgmt** | uv (Python), pnpm (Node.js) |
 | **Infrastructure** | Docker Compose, Clean Architecture (API → Services → Adapters → Agents) |
-| **Ports** | FastAPI:8000, Streamlit:8501, Postgres:5432, Dynamo:8001, OpenSearch:9200 |
-
-### Production Readiness Assessment
-
-| Category | Score | Priority |
-|----------|-------|----------|
-| Security & Authentication | 3/10 | 🔴 HIGH |
-| Error Handling & Logging | 6/10 | 🟡 MEDIUM |
-| Performance & Scalability | 5/10 | 🔴 HIGH |
-| Testing & QA | 4/10 | 🔴 HIGH |
-| Monitoring & Observability | 2/10 | 🟡 MEDIUM |
-| Data Management & Backup | 4/10 | 🔴 HIGH |
-| API Design & Documentation | 7/10 | 🟢 LOW |
-| Deployment & Infrastructure | 5/10 | 🟡 MEDIUM |
-| User Experience & Frontend | 6/10 | 🟡 MEDIUM |
-| Compliance & Privacy | 2/10 | 🔴 HIGH |
-
-**Status:** Prototype/MVP Ready ✅ | Production Ready: ❌ (6-9 months hardening needed)
 
 ---
 
@@ -238,19 +219,6 @@ graph TB
 | **Enterprise** | Q4 2025 | RBAC, SSO (OAuth/SAML), audit logging, rate limiting |
 | **Advanced AI** | 2026+ | Fine-tuned legal models, graph relationships, predictive analytics |
 
----
-
-## 12. Lessons Learned
-
-| Lesson | Insight |
-|--------|---------|
-| **Validate LLM Outputs** | Non-deterministic failures require retry logic with exponential backoff |
-| **Hybrid Search Wins** | kNN + BM25 (70/30 split) outperforms semantic-only search |
-| **History Management** | Conversational context critical but can break structured outputs |
-| **Citation Trust** | Source attribution non-negotiable; validate to prevent hallucinations |
-| **Clean Architecture** | Result types, factories, layer separation enable rapid iteration |
-| **Docker Deployment** | `docker-compose up` simplifies multi-service orchestration |
-| **UX Details** | Response time, context visibility, expandable sections build trust |
 
 ---
 
