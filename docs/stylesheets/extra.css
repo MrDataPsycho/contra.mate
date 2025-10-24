@@ -1,0 +1,44 @@
+/* Custom styles for Contramate documentation */
+
+:root {
+  --md-primary-fg-color: #3f51b5;
+  --md-primary-fg-color--light: #5c6bc0;
+  --md-primary-fg-color--dark: #303f9f;
+  --md-accent-fg-color: #ff4081;
+}
+
+/* Code block styling */
+.highlight {
+  border-radius: 0.5rem;
+}
+
+/* Admonition custom colors */
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  border-color: #448aff;
+}
+
+.md-typeset .admonition.tip,
+.md-typeset details.tip {
+  border-color: #00bfa5;
+}
+
+.md-typeset .admonition.warning,
+.md-typeset details.warning {
+  border-color: #ff9100;
+}
+
+/* Citation styling */
+code {
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* Custom navigation styling */
+.md-nav__link--active {
+  font-weight: 600;
+}
+
+/* Footer spacing */
+.md-footer {
+  margin-top: 2rem;
+}

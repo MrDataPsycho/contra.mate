@@ -119,6 +119,10 @@ vectordb/
 embeddings/
 faiss_index/
 
+# MkDocs documentation
+site/
+.cache/
+
 # API keys and secrets (additional protection)
 *secret*
 *key*

@@ -40,6 +40,11 @@ from contramate.core.agents.executor import (
     ExecutorDependencies,
     ExecutorResponse,
 )
+from contramate.core.agents.contract_metadata_insight import (
+    ContractMetadataInsightAgent,
+    ContractMetadataInsightAgentFactory,
+    ContractMetadataInsightDependencies,
+)
 
 __all__ = [
     "MetadataParserAgent",
@@ -66,4 +71,7 @@ __all__ = [
     "ExecutorAgentFactory",
     "ExecutorDependencies",
     "ExecutorResponse",
+    "ContractMetadataInsightAgent",
+    "ContractMetadataInsightAgentFactory",
+    "ContractMetadataInsightDependencies",
 ]

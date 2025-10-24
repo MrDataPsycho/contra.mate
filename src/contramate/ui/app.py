@@ -309,7 +309,12 @@ def render_sidebar():
 
 def render_chat_interface():
     """Render the main chat interface"""
-    st.title("[Contra].[Mate]")
+    # Display logo
+    logo_path = os.path.join(os.path.dirname(__file__), "assets", "contramate-logo-primary.svg")
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=300)
+    else:
+        st.title("[Contra].[Mate]")  # Fallback if logo not found
 
     # Show current conversation info
     if st.session_state.current_conversation_id:

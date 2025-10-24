@@ -1,4 +1,5 @@
 # Contramate: AI-Powered Contract Management Assistant
+## Sheikh Alam
 
 **Capstone Project Presentation**
 
@@ -185,6 +186,7 @@ Contramate is an intelligent contract management assistant that leverages Large 
 ## 5. Document Processing Workflow
 
 ### End-to-End Data Pipeline
+
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -378,7 +380,7 @@ User: "What happens if payment is late?"
 
 **Step 5: Multi-Document Comparison**
 ```
-User: "Compare payment terms with Contract B"
+User: "Compare payment terms between the contracts."
 → Filters updated to include Contract A + Contract B
 → Tool: compare_filtered_documents
 → Returns side-by-side comparison with citations for each
@@ -533,19 +535,10 @@ Contramate is not just a proof-of-concept—it's a **deployable solution** ready
 
 ### Contact & Resources
 
-**Project Repository:** [Link to GitHub]
-**Live Demo:** [Link to deployed instance]
-**Documentation:** See `progress.md` for detailed implementation notes
-
-**Questions?**
-
-This presentation is available as a markdown file that can be converted to:
-- **Google Slides** (via md2slides)
-- **PowerPoint** (via Pandoc: `pandoc presentation.md -o presentation.pptx`)
-- **PDF** (via Pandoc + LaTeX: `pandoc presentation.md -o presentation.pdf`)
+**Project Repository:** [Link to GitHub]  
 
 ---
 
-*Presented at Agent Engineering Bootcamp Capstone Day*
-*Date: 2025-10-24*
+*Presented at Agent Engineering Bootcamp Capstone Day*  
+*Date: 2025-10-24*  
 *Technology: Multi-Agent AI Systems | RAG | Vector Databases*

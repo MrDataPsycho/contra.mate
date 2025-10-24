@@ -2,6 +2,272 @@
 
 ## Latest Updates - 2025-10-24
 
+### Contract Metadata Insight Agent - SQL-Based Analytics Agent
+
+#### Overview
+Implemented a complete SQL-based analytics agent (`ContractMetadataInsightAgent`) for generating insights from contract metadata. This agent transforms natural language questions into SQL queries, executes them against the PostgreSQL database, and returns formatted analytical results.
+
+#### Architecture
+
+**Components Created:**
+
+1. **Schema Generator Utility** (`utils/schema_generator.py`)
+   - Extracts field metadata from SQLModel classes
+   - Generates markdown documentation for schemas
+   - Creates formatted schema descriptions for LLM system prompts
+   - Categorizes fields (Primary Keys, Clauses, Financial Terms, etc.)
+   - Identifies filterable fields for WHERE clauses
+
+2. **ContractMetadataInsightAgent** (`core/agents/contract_metadata_insight.py`)
+   - Vanilla OpenAI implementation with function calling
+   - 5 specialized SQL tools for different query patterns
+   - Automatic schema documentation injection
+   - Filter application (project_id, contract_type)
+   - Retry logic with exponential backoff
+   - Response validation
+
+3. **ContractMetadataInsightService** (`services/contract_metadata_insight_service.py`)
+   - Service layer with Result types (Ok/Err pattern)
+   - Error handling and logging
+   - Factory pattern for easy instantiation
+   - Message history support for conversations
+
+4. **Example Script** (`examples/contract_metadata_insight_examples.py`)
+   - 12 comprehensive examples demonstrating agent capabilities
+   - Filter usage patterns (single, multiple, combined)
+   - Multi-turn conversations
+   - Various query types (counts, aggregations, comparisons)
+
+#### Features Implemented
+
+**1. SQL Tool Definitions**
+- `execute_sql_query`: Execute custom SELECT queries with limit enforcement
+- `count_contracts`: Get total counts with optional filters
+- `get_contract_types`: List unique contract types with counts
+- `get_contracts_by_clause`: Find contracts with specific clause values
+- `aggregate_by_field`: Group and count by any field
+
+**2. Safety & Validation**
+- ✅ Read-only queries (SELECT only, no modifications)
+- ✅ Automatic LIMIT enforcement (default: 100 rows)
+- ✅ NULL handling in queries
+- ✅ Filter injection into WHERE clauses
+- ✅ Error handling with graceful degradation
+- ❌ No direct user input injection (uses parameterized approach via LLM)
+
+**3. Schema-Aware System Prompt**
+- Automatically generates database schema documentation from `ContractAsmd` model
+- Includes field names, types, and descriptions
+- Categorizes fields for easier understanding
+- Provides SQL query examples
+- Documents answer vs raw fields distinction
+
+**4. Filter Application**
+- Project-level filtering (`project_id`)
+- Contract type filtering (`contract_type`)
+- Combined filters with AND logic
+- Filters applied to all tool executions
+
+**5. Response Format**
+```json
+{
+  "success": true,
+  "answer": "Natural language answer with insights",
+  "sql_query": "SELECT ... (for transparency)",
+  "result_summary": {
+    "total_rows": 45,
+    "key_metrics": {"metric": "value"},
+    "notes": "Important observations"
+  }
+}
+```
+
+#### Files Created
+
+**Core Agent:**
+- `src/contramate/utils/schema_generator.py` - Schema extraction and documentation utilities
+- `src/contramate/core/agents/contract_metadata_insight.py` - Main agent implementation (680 lines)
+- `src/contramate/services/contract_metadata_insight_service.py` - Service layer with Result types
+
+**Examples:**
+- `examples/contract_metadata_insight_examples.py` - 12 comprehensive usage examples (490 lines)
+
+**Modified:**
+- `src/contramate/core/agents/__init__.py` - Added exports for new agent
+
+#### Example Usage Scenarios
+
+**Example 1: Basic Count**
+```python
+service = ContractMetadataInsightService()
+result = await service.query("How many contracts are in the database?")
+# Generates: SELECT COUNT(*) FROM contract_asmd
+```
+
+**Example 2: Clause Analysis**
+```python
+result = await service.query(
+    "How many contracts have non-compete clauses? Break it down by contract type."
+)
+# Generates: SELECT contract_type, COUNT(*) FROM contract_asmd 
+#           WHERE non_compete_answer = 'Yes' GROUP BY contract_type
+```
+
+**Example 3: With Filters**
+```python
+filters = {"project_id": ["proj-123"], "contract_type": ["Service Agreement"]}
+result = await service.query(
+    "What percentage have termination for convenience clauses?",
+    filters=filters
+)
+# Automatically adds: WHERE project_id = 'proj-123' 
+#                     AND contract_type = 'Service Agreement'
+```
+
+**Example 4: Multi-turn Conversation**
+```python
+# First query
+result1 = await service.query("Which contracts have both non-compete and exclusivity?")
+history = [
+    {"role": "user", "content": "Which contracts..."},
+    {"role": "assistant", "content": result1.unwrap()["answer"]}
+]
+
+# Follow-up with context
+result2 = await service.query(
+    "Of those contracts, how many are service agreements?",
+    message_history=history
+)
+```
+
+#### Key Design Decisions
+
+**1. PostgresMetadataAdapter vs SQLModel Session**
+- Uses existing `PostgresMetadataAdapter` for async SQL execution
+- Leverages `execute_query()`, `execute_query_single()`, `execute_query_scalar()` methods
+- Maintains consistency with existing database patterns
+
+**2. Schema Auto-Generation**
+- System prompt includes auto-generated schema from `ContractAsmd` model
+- Ensures LLM always has accurate, up-to-date schema information
+- Categorizes fields for better LLM understanding
+
+**3. Tool Design Philosophy**
+- Provide both high-level tools (`count_contracts`, `get_contract_types`) for common patterns
+- Include low-level tool (`execute_sql_query`) for complex custom queries
+- LLM decides which tool best fits the user's question
+
+**4. Answer vs Raw Fields**
+- System prompt explicitly instructs to use `*_answer` fields for Yes/No clauses
+- Raw fields (without `_answer` suffix) contain extracted text (longer, less structured)
+- Prevents LLM from using wrong fields
+
+**5. Filter Application Strategy**
+- Filters applied globally to all queries during execution
+- Uses `_apply_filters_to_query()` helper to inject WHERE clauses
+- Supports both single values and lists (IN clause)
+
+#### Benefits Achieved
+
+1. **Natural Language to SQL**: Users can ask analytical questions in plain English
+2. **Type Safety**: Result types ensure proper error handling
+3. **Transparency**: Returns executed SQL query for auditability
+4. **Flexible Filtering**: Project/contract type scoping without modifying queries
+5. **Conversation Support**: Multi-turn dialogues with context retention
+6. **Safety First**: Read-only queries with automatic limits
+7. **Extensible Tools**: Easy to add new specialized query patterns
+
+#### Comparison with TalkToContractAgent
+
+| Feature | TalkToContract | ContractMetadataInsight |
+|---------|----------------|-------------------------|
+| **Data Source** | OpenSearch (vector) | PostgreSQL (structured) |
+| **Query Type** | Semantic search | SQL generation |
+| **Use Case** | Find contract content | Analyze metadata stats |
+| **Response** | Text + citations | Answer + SQL + metrics |
+| **Tools** | 5 search tools | 5 SQL tools |
+| **Filters** | OpenSearch filters | WHERE clause filters |
+| **Dependencies** | OpenSearchVectorSearchService | PostgresMetadataAdapter |
+
+#### Testing
+
+**Manual Testing:**
+- ✅ Basic counts and aggregations
+- ✅ Clause-specific queries
+- ✅ Filter application (single, multiple, combined)
+- ✅ Contract type distribution
+- ✅ Multi-turn conversations
+- ✅ Error handling (invalid queries, missing data)
+
+**Example Queries Tested:**
+- "How many contracts are in the database?"
+- "What are the most common contract types?"
+- "Contracts with non-compete clauses by type?"
+- "Percentage of service agreements with termination clauses?"
+- "Compare exclusivity vs non-compete prevalence"
+- "License terms analysis"
+- "Financial provisions breakdown"
+
+#### Usage Instructions
+
+**1. Basic Usage:**
+```python
+from contramate.services.contract_metadata_insight_service import (
+    ContractMetadataInsightService
+)
+
+service = ContractMetadataInsightService()
+result = await service.query("What are the top contract types?")
+
+if result.is_ok():
+    data = result.unwrap()
+    print(data["answer"])
+    print(data["sql_query"])
+```
+
+**2. With Filters:**
+```python
+filters = {
+    "project_id": ["proj-1", "proj-2"],
+    "contract_type": ["Service Agreement"]
+}
+result = await service.query(
+    "How many have liability caps?",
+    filters=filters
+)
+```
+
+**3. Run Examples:**
+```bash
+# From project root
+uv run python examples/contract_metadata_insight_examples.py
+```
+
+#### Future Enhancements
+
+**Short-term:**
+1. Add more specialized tools (date range queries, party searches)
+2. Implement SQL query caching for common patterns
+3. Add query result visualization support
+4. Enhance error messages with query suggestions
+
+**Long-term:**
+1. Support for JOIN queries across multiple tables (when ContractEsmd is populated)
+2. Query optimization and index recommendations
+3. Export results to CSV/Excel
+4. Scheduled reports and alerts
+5. Integration with data visualization dashboards
+
+#### Impact
+
+- **Analytics Access**: Non-technical users can query contract metadata without SQL knowledge
+- **Consistency**: Same Result type pattern as other services
+- **Extensibility**: Easy to add new tools and query patterns
+- **Transparency**: SQL queries visible for verification and optimization
+- **Safety**: Read-only access prevents accidental data modifications
+
+---
+
 ### Capstone Presentation Created with Production Readiness Assessment
 
 #### Overview
