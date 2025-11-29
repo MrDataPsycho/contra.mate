@@ -261,7 +261,7 @@ class ClarifierAgentFactory:
         # Create agent
         agent = Agent(
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=ClarificationResponse,
             model_settings=model_settings,
             deps_type=ClarifierDependencies,
@@ -293,7 +293,7 @@ class ClarifierAgentFactory:
         # Create agent
         agent = Agent(
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=ClarificationResponse,
             model_settings=model_settings,
             deps_type=ClarifierDependencies,

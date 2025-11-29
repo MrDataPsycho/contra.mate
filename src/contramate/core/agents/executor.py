@@ -48,7 +48,7 @@ class ExecutorAgentFactory:
 
         agent = Agent(
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=ExecutorResponse,
             model_settings=model_settings,
             deps_type=ExecutorDependencies,
@@ -67,7 +67,7 @@ class ExecutorAgentFactory:
 
         agent = Agent(
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=ExecutorResponse,
             model_settings=model_settings,
             deps_type=ExecutorDependencies,

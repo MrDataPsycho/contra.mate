@@ -34,7 +34,7 @@ class QueryRewriterAgentFactory:
 
         return Agent(
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=QueryRewriteResponse,
             model_settings=model_settings,
         )
@@ -54,7 +54,7 @@ class QueryRewriterAgentFactory:
 
         return Agent(
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=QueryRewriteResponse,
             model_settings=model_settings,
         )

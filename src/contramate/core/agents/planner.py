@@ -456,7 +456,7 @@ class PlannerAgentFactory:
         # Create agent with system prompt and dependencies
         agent = Agent[ExecutionPlan](
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=ExecutionPlan,
             model_settings=model_settings,
             deps_type=PlannerDependencies,
@@ -488,7 +488,7 @@ class PlannerAgentFactory:
         # Create agent with dependencies
         agent = Agent[ExecutionPlan](
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=ExecutionPlan,
             model_settings=model_settings,
             deps_type=PlannerDependencies,

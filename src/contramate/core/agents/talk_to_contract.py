@@ -511,11 +511,11 @@ class TalkToContractAgentFactory:
 
         agent = Agent(
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=TalkToContractResponse,
             model_settings=model_settings,
             deps_type=TalkToContractDependencies,
-            retries=3,  # Increase retries for message history cases
+            retries=2,  # Increase retries for message history cases
         )
 
         # Register tools
@@ -538,7 +538,7 @@ class TalkToContractAgentFactory:
 
         agent = Agent(
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=TalkToContractResponse,
             model_settings=model_settings,
             deps_type=TalkToContractDependencies,

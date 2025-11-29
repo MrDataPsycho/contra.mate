@@ -22,7 +22,7 @@ async def test_agent():
 
     agent = Agent(
         model=model,
-        system_prompt="You are a friendly AI assistant. You always respond with properly formatted Markdown.",
+        instructions="You are a friendly AI assistant. You always respond with properly formatted Markdown.",
     )
     result = await agent.run("What are the main benefits of cloud computing?")
 

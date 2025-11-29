@@ -86,7 +86,7 @@ class AnswerCritiqueAgent:
 
         agent = Agent[AnswerCritiqueResponse](
             model=model,
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
             output_type=AnswerCritiqueResponse,
             model_settings=model_settings,
         )
