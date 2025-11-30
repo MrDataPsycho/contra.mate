@@ -18,7 +18,6 @@ from rich.text import Text
 from rich import box
 
 from contramate.services.postgres_status_service import PostgresService
-from contramate.services.dynamodb_status_service import DynamoDBStatusService
 from contramate.services.opensearch_status_service import OpenSearchStatusService
 from contramate.services.openai_status_service import OpenAIStatusService
 from contramate.services.litellm_status_service import LiteLLMStatusService
@@ -32,11 +31,6 @@ SERVICE_MAPPINGS = {
     "postgres": {
         "name": "PostgreSQL",
         "service_class": PostgresService,
-        "client": None
-    },
-    "dynamodb": {
-        "name": "DynamoDB",
-        "service_class": DynamoDBStatusService,
         "client": None
     },
     "opensearch": {
@@ -164,7 +158,7 @@ async def check_service_status(service_key: str, clients: Dict[str, Any]) -> Dic
 @app.command()
 def check(
     service: str = typer.Argument(
-        help="Service to check (postgres, dynamodb, opensearch, openai, litellm, all)"
+        help="Service to check (postgres, opensearch, openai, litellm, all)"
     ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show verbose output")
 ):

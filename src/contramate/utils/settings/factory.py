@@ -7,7 +7,6 @@ Provides methods to create individual setting objects as needed.
 
 from contramate.utils.settings.core import (
     PostgresSettings,
-    DynamoDBSettings,
     OpenSearchSettings,
     OpenAISettings,
     AOAICertSettings,
@@ -22,11 +21,6 @@ class SettingsFactory:
     def create_postgres_settings() -> PostgresSettings:
         """Create PostgreSQL settings instance"""
         return PostgresSettings()
-    
-    @staticmethod
-    def create_dynamodb_settings() -> DynamoDBSettings:
-        """Create DynamoDB settings instance"""
-        return DynamoDBSettings()
     
     @staticmethod
     def create_opensearch_settings() -> OpenSearchSettings:

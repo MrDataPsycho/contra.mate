@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends
 
 
 from contramate.services.postgres_status_service import PostgresService
-from contramate.services.dynamodb_status_service import DynamoDBStatusService
 from contramate.services.opensearch_status_service import OpenSearchStatusService
 from contramate.services.openai_status_service import OpenAIStatusService
 from contramate.llm import OpenAIChatClient
@@ -17,11 +16,6 @@ router = APIRouter(prefix="/api", tags=["status"])
 def get_postgres_service() -> PostgresService:
     """Get PostgreSQL status service instance."""
     return PostgresService()
-
-
-def get_dynamodb_service() -> DynamoDBStatusService:
-    """Get DynamoDB status service instance."""
-    return DynamoDBStatusService()
 
 
 def get_opensearch_service() -> OpenSearchStatusService:
@@ -49,14 +43,6 @@ async def postgres_status(
     service: PostgresService = Depends(get_postgres_service),
 ):
     """Check PostgreSQL connection status."""
-    return await service.check_status()
-
-
-@router.get("/dynamodb/status")
-async def dynamodb_status(
-    service: DynamoDBStatusService = Depends(get_dynamodb_service),
-):
-    """Check DynamoDB connection status."""
     return await service.check_status()
 
 
