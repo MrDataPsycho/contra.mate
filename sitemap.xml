@@ -2,22 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://mrdatapsycho.github.io/contra.mate/</loc>
-         <lastmod>2025-10-24</lastmod>
+         <lastmod>2025-11-30</lastmod>
+    </url>
+    <url>
+         <loc>https://mrdatapsycho.github.io/contra.mate/app-debug/</loc>
+         <lastmod>2025-11-30</lastmod>
     </url>
     <url>
          <loc>https://mrdatapsycho.github.io/contra.mate/presentation/</loc>
-         <lastmod>2025-10-24</lastmod>
+         <lastmod>2025-11-30</lastmod>
     </url>
     <url>
          <loc>https://mrdatapsycho.github.io/contra.mate/components/agents/contract-metadata-insight/</loc>
-         <lastmod>2025-10-24</lastmod>
+         <lastmod>2025-11-30</lastmod>
     </url>
     <url>
          <loc>https://mrdatapsycho.github.io/contra.mate/getting-started/installation/</loc>
-         <lastmod>2025-10-24</lastmod>
+         <lastmod>2025-11-30</lastmod>
     </url>
     <url>
          <loc>https://mrdatapsycho.github.io/contra.mate/getting-started/quickstart/</loc>
-         <lastmod>2025-10-24</lastmod>
+         <lastmod>2025-11-30</lastmod>
     </url>
 </urlset>
