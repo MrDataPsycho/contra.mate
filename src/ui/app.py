@@ -15,7 +15,7 @@ from datetime import datetime
 import time
 import os
 
-from contramate.ui import format_answer_with_citations_markdown
+from utils import format_answer_with_citations_markdown
 
 # Configuration
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")

@@ -10,6 +10,8 @@ services:
       - "host.docker.internal:172.17.0.1"
     env_file:
       - .envs/docker.env
+    volumes:
+      - ./src/contramate:/app/src/contramate
     depends_on:
       - opensearch
       - postgres
@@ -24,6 +26,8 @@ services:
     container_name: rag-ui
     ports:
       - "8501:8501"
+    volumes:
+      - ./src/ui:/app/src/ui
     depends_on:
       - backend
     environment:

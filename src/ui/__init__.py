@@ -1,6 +1,6 @@
 """Streamlit UI module for Contramate"""
 
-from contramate.ui.utils import (
+from .utils import (
     format_answer_with_citations,
     format_answer_with_citations_markdown,
     extract_citations_list,
