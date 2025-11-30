@@ -8,6 +8,14 @@ from contramate.dbs.models.document_status import (
     DocumentChunkingStatus,
     DocumentIndexingStatus,
 )
+from contramate.dbs.models.postgres_conversation import (
+    Conversation,
+    Message,
+    ConversationRead,
+    MessageRead,
+    ConversationCreate,
+    MessageCreate,
+)
 
 __all__ = [
     "FeedbackType",
@@ -16,4 +24,10 @@ __all__ = [
     "DocumentConversionStatus",
     "DocumentChunkingStatus",
     "DocumentIndexingStatus",
+    "Conversation",
+    "Message",
+    "ConversationRead",
+    "MessageRead",
+    "ConversationCreate",
+    "MessageCreate",
 ]

@@ -15,7 +15,6 @@ services:
     depends_on:
       - opensearch
       - postgres
-      - dynamodb
     networks:
       - rag-net
 
@@ -64,16 +63,16 @@ services:
     networks:
       - rag-net
 
-  dynamodb:
-    image: amazon/dynamodb-local:latest
-    container_name: rag-dynamodb
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
-    ports:
-      - "8001:8000"
-    volumes:
-      - ./.db/dynamodb:/home/dynamodblocal/data
-    networks:
-      - rag-net
+  # dynamodb:
+  #   image: amazon/dynamodb-local:latest
+  #   container_name: rag-dynamodb
+  #   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
+  #   ports:
+  #     - "8001:8000"
+  #   volumes:
+  #     - ./.db/dynamodb:/home/dynamodblocal/data
+  #   networks:
+  #     - rag-net
 
   opensearch:
     image: opensearchproject/opensearch:2.11.1

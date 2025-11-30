@@ -5,8 +5,7 @@ from fastapi import APIRouter, HTTPException, Depends, Body
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from contramate.services.conversation_service import ConversationService
-from contramate.utils.settings.core import DynamoDBSettings
+from contramate.services.postgres_conversation_service import PostgresConversationService
 
 
 router = APIRouter(prefix="/api/conversations", tags=["conversations"])
@@ -61,20 +60,16 @@ class MessageListResponse(BaseModel):
 
 
 # Dependency injection
-def get_conversation_service() -> ConversationService:
-    """Get ConversationService instance"""
-    settings = DynamoDBSettings()
-    return ConversationService(
-        table_name=settings.table_name,
-        dynamodb_settings=settings
-    )
+def get_conversation_service() -> PostgresConversationService:
+    """Get PostgresConversationService instance"""
+    return PostgresConversationService.create_default()
 
 
 # Endpoints
 @router.post("/", response_model=ConversationResponse)
 async def create_conversation(
     request: CreateConversationRequest,
-    service: ConversationService = Depends(get_conversation_service)
+    service: PostgresConversationService = Depends(get_conversation_service)
 ):
     """
     Create a new conversation.
@@ -136,7 +131,7 @@ async def create_conversation(
 async def get_conversations(
     user_id: str,
     limit: int = 10,
-    service: ConversationService = Depends(get_conversation_service)
+    service: PostgresConversationService = Depends(get_conversation_service)
 ):
     """
     Get conversations for a user.
@@ -188,7 +183,7 @@ async def get_conversations(
 async def get_conversation(
     user_id: str,
     conversation_id: str,
-    service: ConversationService = Depends(get_conversation_service)
+    service: PostgresConversationService = Depends(get_conversation_service)
 ):
     """
     Get a specific conversation.
@@ -236,7 +231,7 @@ async def update_conversation_filters(
     user_id: str,
     conversation_id: str,
     request: UpdateConversationFiltersRequest,
-    service: ConversationService = Depends(get_conversation_service)
+    service: PostgresConversationService = Depends(get_conversation_service)
 ):
     """
     Update conversation filter values.
@@ -302,7 +297,7 @@ async def get_messages(
     user_id: str,
     conversation_id: str,
     limit: int = 50,
-    service: ConversationService = Depends(get_conversation_service)
+    service: PostgresConversationService = Depends(get_conversation_service)
 ):
     """
     Get messages for a conversation.
@@ -356,7 +351,7 @@ async def get_messages(
 async def delete_conversation(
     user_id: str,
     conversation_id: str,
-    service: ConversationService = Depends(get_conversation_service)
+    service: PostgresConversationService = Depends(get_conversation_service)
 ):
     """
     Delete a conversation and all its messages.
@@ -413,7 +408,7 @@ async def add_message(
     user_id: str,
     conversation_id: str,
     request: AddMessageRequest,
-    service: ConversationService = Depends(get_conversation_service)
+    service: PostgresConversationService = Depends(get_conversation_service)
 ):
     """
     Add a message to a conversation.
