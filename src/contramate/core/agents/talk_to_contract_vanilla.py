@@ -313,30 +313,40 @@ class TalkToContractVanillaAgent:
 
         try:
             if tool_name == "hybrid_search":
+                if "query" not in tool_args:
+                    raise KeyError("'query' parameter required for hybrid_search")
                 result = self.search_service.hybrid_search(
                     query=tool_args["query"],
                     size=tool_args.get("size", 10),
                     filters=filters,
                 )
             elif tool_name == "search_by_project":
+                if "project_id" not in tool_args:
+                    raise KeyError("'project_id' parameter required for search_by_project")
                 result = self.search_service.search_by_project(
                     project_id=tool_args["project_id"],
                     size=tool_args.get("size", 100),
                     filters=filters,
                 )
             elif tool_name == "search_similar_documents":
+                if "record_id" not in tool_args:
+                    raise KeyError("'record_id' parameter required for search_similar_documents")
                 result = self.search_service.search_similar_documents(
                     record_id=tool_args["record_id"],
                     size=tool_args.get("size", 5),
                     filters=filters,
                 )
             elif tool_name == "search_by_document":
+                if "project_id" not in tool_args or "reference_doc_id" not in tool_args:
+                    raise KeyError("'project_id' and 'reference_doc_id' parameters required for search_by_document")
                 result = self.search_service.search_by_document(
                     project_id=tool_args["project_id"],
                     reference_doc_id=tool_args["reference_doc_id"],
                     size=tool_args.get("size"),
                 )
             elif tool_name == "compare_filtered_documents":
+                if "query" not in tool_args:
+                    raise KeyError("'query' parameter required for compare_filtered_documents")
                 result = self.search_service.compare_filtered_documents(
                     query=tool_args["query"],
                     size_per_doc=tool_args.get("size_per_doc", 3),
@@ -354,8 +364,11 @@ class TalkToContractVanillaAgent:
                 logger.error(f"❌ Tool {tool_name} failed: {error_msg}")
                 return json.dumps({"success": False, "error": error_msg})
 
+        except KeyError as e:
+            logger.error(f"❌ Missing required argument in tool {tool_name}: {e}")
+            return json.dumps({"success": False, "error": f"Missing required argument: {str(e)}"})
         except Exception as e:
-            logger.error(f"❌ Tool execution error: {e}")
+            logger.error(f"❌ Tool execution error in {tool_name}: {e}", exc_info=True)
             return json.dumps({"success": False, "error": str(e)})
 
     @retry(
@@ -423,19 +436,46 @@ class TalkToContractVanillaAgent:
 
                 # Execute each tool call
                 for tool_call in message.tool_calls:
-                    tool_name = tool_call.function.name
-                    tool_args = json.loads(tool_call.function.arguments)
+                    try:
+                        tool_name = tool_call.function.name
+                        tool_args = json.loads(tool_call.function.arguments)
 
-                    # Execute tool
-                    tool_result = await self._execute_tool(tool_name, tool_args, filters)
+                        # Execute tool
+                        tool_result = await self._execute_tool(tool_name, tool_args, filters)
 
-                    # Add tool response to messages
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": tool_name,
-                        "content": tool_result,
-                    })
+                        # Add tool response to messages
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": tool_name,
+                            "content": tool_result,
+                        })
+                    except json.JSONDecodeError as e:
+                        logger.error(f"❌ Failed to parse tool arguments: {tool_call.function.arguments}")
+                        logger.error(f"❌ Error: {e}")
+                        # Add error response to messages
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": tool_call.function.name,
+                            "content": json.dumps({
+                                "success": False,
+                                "error": f"Invalid tool arguments: {str(e)}"
+                            }),
+                        })
+                    except Exception as e:
+                        logger.error(f"❌ Unexpected error executing tool {tool_name}: {e}")
+                        logger.error(f"❌ Error: {e}", exc_info=True)
+                        # Add error response to messages
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": tool_name,
+                            "content": json.dumps({
+                                "success": False,
+                                "error": f"Tool execution failed: {str(e)}"
+                            }),
+                        })
 
                 # Continue loop to get next response
                 continue

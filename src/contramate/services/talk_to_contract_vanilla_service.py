@@ -55,6 +55,10 @@ class TalkToContractVanillaService:
                 message_history=message_history,
             )
 
+            # Debug: log result type and content
+            logger.info(f"Agent returned result type: {type(result)}")
+            logger.info(f"Agent returned result: {result}")
+
             # Check if agent succeeded
             if result.get("success"):
                 logger.info("Query completed successfully")
